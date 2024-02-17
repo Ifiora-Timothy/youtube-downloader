@@ -1,11 +1,8 @@
 import React from 'react'
-import SmallImage from '@/app/assets/images/smallImage.png'
 import SearchIcon from '@/app/assets/images/search.svg'
-import DownloadIcon from '@/app/assets/images/download.svg'
-import DownloadBg from '@/app/assets/images/downloadBg.png'
 import Image from 'next/image'
-import HorizontalListCard from '../UI/HorizontalListCard'
-import VerticalListCard from '../UI/VerticalListCard'
+import Downloads from '../components/Downloads'
+import EmptyDownload from '../components/EmptyDownload'
 type Props = {}
 
 const YtDownload = (props: Props) => {
@@ -29,18 +26,7 @@ const YtDownload = (props: Props) => {
                             </div>
                         </div>
                     </div>
-                    <div className="self-stretch justify-center h-max items-start gap-6 inline-flex">
-                        <div className="w-[677px] self-stretch pb-[34px] flex-col justify-start items-start gap-4 inline-flex">
-                            <div className="self-stretch h-7 pr-[512px] justify-start items-center inline-flex">
-                                <div className=" text-white text-xl font-bold font-['Roboto'] leading-7">Videos in Playlist:</div>
-                            </div>
-                            <div className="self-stretch py-[3px] flex-col justify-start items-start gap-[18px] inline-flex">
-                                {[1, 2].map((item, index) => (<HorizontalListCard key={index}/>))}
-
-                            </div>
-                        </div>
-                        <VerticalListCard/>
-                    </div>
+                   <EmptyDownload/>
                 </div>
             </div>
         </div>
