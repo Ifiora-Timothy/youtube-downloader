@@ -17,36 +17,36 @@ export default function Home() {
       </div>
       <div className="w-full h-[476px] pl-14  pr-[55px]    flex">
         <div className="grow shrink basis-0 self-stretch px-4 ">
-          <div className="grow shrink basis-0 self-stretch justify-center items-center gap-10 inline-flex">
+          <div className="grow shrink basis-0 self-stretch justify-center items-center gap-10 flex">
             <div className="w-[540px] h-[316px] relative flex-col justify-start items-start flex">
-              <div className="pr-[230px] pb-0.5 justify-start items-center inline-flex">
+              <div className="pr-[230px] pb-0.5 justify-start items-center flex">
                 <div className="w-[310px] text-white text-2xl font-bold font-['Roboto'] leading-9">Your Media, Your Way</div>
               </div>
-              <div className=" justify-start mt-4 mb-3 items-center inline-flex">
+              <div className=" justify-start mt-4 mb-3 items-center flex">
                 <div className="w-[524px] text-zinc-100 text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Effortlessly convert videos, playlists, and images to your preferred format with our advanced tools.</div>
               </div>
-              <div className="w-[540px] pl-5 flex-col justify-center items-start gap-2 inline-flex">
-                <div className="self-stretch grow shrink basis-0 justify-start items-center inline-flex">
+              <div className="w-[540px] pl-5 flex-col justify-center items-start gap-2 flex">
+                <div className="self-stretch grow shrink basis-0 justify-start items-center flex">
                   <div className="text-sm text-zinc-200 font-normal font-['Segoe UI Emoji'] leading-normal">Download videos or entire playlists</div>
                 </div>
-                <div className="self-stretch grow shrink basis-0 justify-start items-center inline-flex">
+                <div className="self-stretch grow shrink basis-0 justify-start items-center flex">
                   <div className="text-zinc-200 text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Convert MP3 to MP4 and vice versa</div>
                 </div>
-                <div className="self-stretch grow shrink basis-0 justify-start items-center inline-flex">
+                <div className="self-stretch grow shrink basis-0 justify-start items-center flex">
                   <div className="text-zinc-200  text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Transform images into videos</div>
                 </div>
-                <div className="self-stretch grow shrink basis-0 justify-start items-center inline-flex">
+                <div className="self-stretch grow shrink basis-0 justify-start items-center flex">
                   <div className="text-zinc-200  text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Comprehensive file format support</div>
                 </div>
-                <div className="self-stretch grow shrink basis-0  justify-start items-center inline-flex">
+                <div className="self-stretch grow shrink basis-0  justify-start items-center flex">
                   <div className="text-zinc-200  text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Trim and split videos with precision</div>
                 </div>
               </div>
-              <div className="w-[147px] h-[45px] mt-4 px-8 pt-[4px] pb-[4px] bg-purple-600 rounded-full justify-center items-center inline-flex">
+              <div className="w-[147px] h-[45px] mt-4 px-8 pt-[4px] pb-[4px] bg-purple-600 rounded-full justify-center items-center flex">
                 <div className="text-white text-sm font-semibold font-['Roboto'] leading-normal">Learn More</div>
               </div>
             </div>
-            <div className="grow shrink basis-0 h-[300px] pr-10 justify-start items-center inline-flex">
+            <div className="grow shrink basis-0 h-[300px] pr-10 justify-start items-center flex">
               <div className="w-[500px] h-[300px] relative rounded-lg shadow flex-col justify-start items-start flex">
                 <Image alt="main image" src={MainImage} height="300" width="500"/>
               </div>
@@ -54,9 +54,9 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="w-full h-[72px] pl-14 pr-[55px] py-6  bg-purple-800 bg-opacity-50 justify-center items-center inline-flex">
-        <div className="grow shrink basis-0 self-stretch px-4 justify-center items-center inline-flex">
-          <div className="grow shrink basis-0 self-stretch pl-[393px] pr-[385px] justify-end items-center inline-flex">
+      <div className="w-full h-[72px] pl-14 pr-[55px] py-6  bg-purple-800 bg-opacity-50 justify-center items-center flex">
+        <div className="grow shrink basis-0 self-stretch px-4 justify-center items-center flex">
+          <div className="grow shrink basis-0 self-stretch pl-[393px] pr-[385px] justify-end items-center flex">
             <div className="text-center text-white text-base font-normal font-['Segoe UI Emoji'] leading-normal">© 2023 MediaConverterPro. All rights reserved.</div>
           </div>
         </div>
