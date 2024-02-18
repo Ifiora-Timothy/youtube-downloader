@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 
 interface FormData {
@@ -136,87 +136,120 @@ const Form = ({ formId, petForm, forNewPet = true }: Props) => {
 
   return (
     <>
-      <form id={formId} onSubmit={handleSubmit}>
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          maxLength={20}
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          required
-        />
+      <form
+        id={formId}
+        onSubmit={handleSubmit}
+        className="max-w-md mx-auto h-400 border border-purple-500 rounded-md p-4 flex flex-col justify-between"
+      >
+        <div className="mb-4 flex">
+          <label htmlFor="name" className="mb-2">Name</label>
+          <input
+            type="text"
+            maxLength={20}
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="owner_name">Owner</label>
-        <input
-          type="text"
-          maxLength={20}
-          name="owner_name"
-          value={form.owner_name}
-          onChange={handleChange}
-          required
-        />
+        <div className="mb-4 flex=">
+          <label htmlFor="owner_name" className="mb-2">Owner</label>
+          <input
+            type="text"
+            maxLength={20}
+            name="owner_name"
+            value={form.owner_name}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="species">Species</label>
-        <input
-          type="text"
-          maxLength={30}
-          name="species"
-          value={form.species}
-          onChange={handleChange}
-          required
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="species" className="mb-2">Species</label>
+          <input
+            type="text"
+            maxLength={30}
+            name="species"
+            value={form.species}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="age">Age</label>
-        <input
-          type="number"
-          name="age"
-          value={form.age}
-          onChange={handleChange}
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="age" className="mb-2">Age</label>
+          <input
+            type="number"
+            name="age"
+            value={form.age}
+            onChange={handleChange}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="poddy_trained">Potty Trained</label>
-        <input
-          type="checkbox"
-          name="poddy_trained"
-          checked={form.poddy_trained}
-          onChange={handleChange}
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="poddy_trained" className="mb-2">
+            <input
+              type="checkbox"
+              name="poddy_trained"
+              checked={form.poddy_trained}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            Potty Trained
+          </label>
+        </div>
 
-        <label htmlFor="diet">Diet</label>
-        <textarea
-          name="diet"
-          maxLength={60}
-          value={form.diet}
-          onChange={handleChange}
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="diet" className="mb-2">Diet</label>
+          <textarea
+            name="diet"
+            maxLength={60}
+            value={form.diet}
+            onChange={handleChange}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="image_url">Image URL</label>
-        <input
-          type="url"
-          name="image_url"
-          value={form.image_url}
-          onChange={handleChange}
-          required
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="image_url" className="mb-2">Image URL</label>
+          <input
+            type="url"
+            name="image_url"
+            value={form.image_url}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="likes">Likes</label>
-        <textarea
-          name="likes"
-          maxLength={60}
-          value={form.likes}
-          onChange={handleChange}
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="likes" className="mb-2">Likes</label>
+          <textarea
+            name="likes"
+            maxLength={60}
+            value={form.likes}
+            onChange={handleChange}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <label htmlFor="dislikes">Dislikes</label>
-        <textarea
-          name="dislikes"
-          maxLength={60}
-          value={form.dislikes}
-          onChange={handleChange}
-        />
+        <div className="mb-4 flex">
+          <label htmlFor="dislikes" className="mb-2">Dislikes</label>
+          <textarea
+            name="dislikes"
+            maxLength={60}
+            value={form.dislikes}
+            onChange={handleChange}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-        <button type="submit" className="btn">
+        <button type="submit" className="btn bg-blue-500 text-white py-2 px-4 rounded-md">
           Submit
         </button>
       </form>

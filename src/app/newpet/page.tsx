@@ -13,10 +13,8 @@ const NewPet = () => {
     dislikes: [],
   };
 
-  // return <Form formId="add-pet-form" petForm={petForm} />;
-  return (
-    <div>new pet</div>
-  )
+   return <Form formId="add-pet-form" petForm={petForm} />;
+  
 };
 
 export default NewPet;
