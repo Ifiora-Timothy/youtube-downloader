@@ -1,4 +1,5 @@
 import { CheckSquare2, CircleUserRound, EyeOff, LockKeyhole, MailOpen } from "lucide-react"
+import Link from "next/link"
 
 type Props = {}
 
@@ -50,7 +51,7 @@ const Signup = (props: Props) => {
                     <div className="text-white text-[10px] font-bold font-['Inter']">CREATE ACCOUNT</div>
                 </div>
                 <div className="pl-[27px] pr-[13px] py-1  justify-end items-center inline-flex">
-                    <div className="text-right"><span className="text-black text-xs font-light font-['Inter'] leading-[13.71px]">Already have an account? </span><span className="text-black text-xs font-semibold font-['Inter'] leading-[13.71px]">Sign In</span></div>
+                    <div className="text-right"><span className="text-black text-xs font-light font-['Inter'] leading-[13.71px]">Already have an account? </span><Link href='/login' className="underline text-blue-800 text-xs font-semibold font-['Inter'] leading-[13.71px]">Log In</Link></div>
                 </div>
             </div>
         </div>

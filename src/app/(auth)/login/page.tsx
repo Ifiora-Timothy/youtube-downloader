@@ -1,11 +1,12 @@
 import { CheckSquare2, CircleUserRound, EyeOff, LockKeyhole, MailOpen } from "lucide-react"
+import Link from "next/link"
 
 
 type Props = {}
 
 const page = (props: Props) => {
   return (
-    <div className="w-full h-[90vh]  bg-purple-600 justify-center pt-20  flex">
+    <div className="w-full  h-[90vh] bg-purple-600 justify-center pt-20  flex">
     <div className="w-[371px] h-[300px]  flex flex-col items-center gap-2 pt-10 bg-white rounded-[19px] shadow">
         <div className=" bg-red-900 bg-opacity-0 mt-1 justify-center items-center inline-flex">
             <div className="text-neutral-900 text-xl font-bold font-['Inter']">Log In</div>
@@ -36,7 +37,7 @@ const page = (props: Props) => {
             <div className="text-white text-[10px] font-bold font-['Inter']">LOG IN</div>
         </div>
         <div className="pl-[27px] pr-[13px]   justify-end items-center inline-flex">
-            <div className="text-right"><span className="text-black text-xs font-light font-['Inter'] ">Don't have an account? </span><span className="text-black text-xs font-semibold font-['Inter'] leading-[13.71px]">Sign Up</span></div>
+            <div className="text-right"><span className="text-black text-xs font-light font-['Inter'] ">Don't have an account? </span><Link href='/signup' className="underline text-blue-800  text-xs font-semibold font-['Inter'] leading-[13.71px]">Sign Up</Link></div>
         </div>
     </div>
 </div>
