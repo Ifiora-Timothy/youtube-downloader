@@ -1,5 +1,5 @@
 import Image from "next/image";
-import MainImage from "@/app/assets/images/largeWhiteBg.png"
+import MainImage from "@/app/assets/images/largeWhitebg.png";
 
 export default function Home() {
   return (
