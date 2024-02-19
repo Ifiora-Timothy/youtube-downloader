@@ -53,5 +53,5 @@ UserSchema.statics.createUser = async function (data:Users) {
   return data
 }
 
-export const user = mongoose.model<Users,userModel>("User", UserSchema)
+export const user = mongoose.models.User||mongoose.model<Users,userModel>("User", UserSchema)
 
