@@ -6,12 +6,13 @@ import { CheckSquare2, CircleUserRound, EyeOff, LockKeyhole, MailOpen } from "lu
 import Link from "next/link"
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
+import { mutate } from "swr";
 
 export interface FormData {
     username: string;
     email: string;
     password: string;
-    conditions: boolean
+    credentials: boolean
 }
 
 interface Error {
@@ -26,13 +27,9 @@ type Props = {
     forNewPet?: boolean;
 };
 const Signup = (props: Props) => {
-    const router = useRouter()
+    const [form, setForm] = useState<FormData>({ username: "", email: "", password: "", credentials: false });
 
-    const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState("");
-    const [form, setForm] = useState<FormData>({ username: "", email: "", password: "", conditions: false });
-
-
+    const mutation= trpc.authCallback.useMutation()
 
     //handle input change
     const handleChange = (
@@ -40,7 +37,7 @@ const Signup = (props: Props) => {
     ) => {
         const target = e.target;
         const value =
-            target.name === "conditions"
+            target.name === "credentials"
                 ? (target as HTMLInputElement).checked
                 : target.value;
         const name = target.name;
@@ -65,14 +62,8 @@ const Signup = (props: Props) => {
         const errs = formValidate();
 
         if (Object.keys(errs).length === 0) {
-            // postData(form)
-            console.log("no errors good to go");
-            customRedirect('/authCallback')
-            
-        } else {
-            setErrors({ errs });
-            console.log("so sad", { errs })
-        }
+           mutation.mutate(form)
+        } 
     };
 
 
@@ -90,7 +81,7 @@ const Signup = (props: Props) => {
                 <form className="flex flex-col items-center" onSubmit={handleSubmit}>
 
 
-                    <div className="w-[276px] flex flex-col gap-4 mt-2  ">
+                    <div className="w-[276px] flex flex-col text-gray-900 gap-4 mt-2  ">
                         <div className="w-[276px] h-[35px] px-2.5  pt-1.5 pb-[5px] left-0  bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
                             <div className="self-stretch w-full justify-start items-center gap-[5px] inline-flex">
                                 <div className="w-6 h-6 relative">
@@ -122,10 +113,10 @@ const Signup = (props: Props) => {
 
                     <div className="p-0.5 mt-2 items-center gap-px inline-flex">
                         <div className="w-[17px] h-[17px] relative">
-                            <input onChange={handleChange} type="checkbox" name="conditions" id="conditions" hidden />
-                            <label htmlFor="conditions">
-                                <CheckSquare2 className={clsx("text  w-[17px] h-[17px]  text-xs", {
-                                    " bg-purple-900 text-white": form.conditions
+                            <input onChange={handleChange} type="checkbox" name="credentials" id="credentials" hidden />
+                            <label htmlFor="credentials">
+                                <CheckSquare2 className={clsx("text  w-[17px] h-[17px] text-black text-xs", {
+                                    " bg-purple-900 text-white": form.credentials
                                 })} />
                             </label>
 
@@ -135,12 +126,14 @@ const Signup = (props: Props) => {
                         </div>
                     </div>
                     <div className=" mt-[1px] w-[140px]  py-2 bg-gradient-to-b from-purple-700 to-purple-700 rounded-[53px]  shadow shadow-blue-400  drop-shadow-lg justify-center items-center flex">
-                        <button type="submit" className="text-white block text-[10px] font-bold font-['Inter']">CREATE ACCOUNT</button>
+                        <button disabled={mutation.isPending} type="submit" className="text-white block text-[10px] font-bold font-['Inter']">CREATE ACCOUNT</button>
                     </div>
                 </form>
                 <div className="pl-[27px] pr-[13px] py-1  justify-end items-center inline-flex">
                     <div className="text-right"><span className="text-black text-xs font-light font-['Inter'] leading-[13.71px]">Already have an account? </span><Link href='/login' className="underline text-blue-800 text-xs font-semibold font-['Inter'] leading-[13.71px]">Log In</Link></div>
                 </div>
+                {mutation.isError && <div className="text-red-500 text-xs font-semibold font-['Inter']">{mutation.error.message}</div>}
+                {mutation.isSuccess && <div className="text-green-500 text-xs font-semibold font-['Inter']">Account created successfully</div>}
             </div>
         </div>
     )

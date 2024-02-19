@@ -1,23 +1,27 @@
+import { FormData } from '@/app/(auth)/signup/page';
 import {publicProcedure, router} from './trpc'
 import {user} from '@/app/lib/models/user'
-
+import { z } from 'zod';
+import dbConnect from '@/app/lib/dbConnect';
 
 export const appRouter=router({
-authCallback:publicProcedure.query(()=>{
+authCallback:publicProcedure.input(
+    z.object({
+        username:z.string(),
+        email:z.string(),
+        password:z.string(),
+        credentials:z.boolean()
+    }),
+).mutation(async(opts)=>{
 
+    const {username,email,password,credentials} = opts.input
     try{
-        const resp = user.createUser({username:'helll',email:"fffff@dd.com",password:'dddd',conditions:true})
-    }
-    catch(err){
-        console.log(err)
-    }
-    finally{
-        console.log('donee')
-    }
+        
+        await dbConnect()
+        //@ts-ignore
+        const resp:FormData = user.createUser({username,email,password,credentials})
    
-
-return {success: true}
-
+   
     //TODO: validate using mongoose schema validtaion
 
     //TODO: if not throw trpc unauthorised error
@@ -31,6 +35,18 @@ return {success: true}
     //TODO:create the session
 
     //TODO: return successcallbaxk
+    return resp
+    }
+    catch(err){
+        console.log(err)
+    }
+    finally{
+        console.log('donee')
+    }
+   
+
+return {success: true}
+
 })
 
 });
