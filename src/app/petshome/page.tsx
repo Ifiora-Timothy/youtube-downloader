@@ -1,6 +1,6 @@
 import Link from "next/link";
 import dbConnect from "../lib/dbConnect";
-import Pet,{ Pets } from "../lib/models/pet";
+import Pet,{ Pets } from "../lib/models/user";
 import { GetServerSideProps } from "next";
 
 /* Retrieves pet(s) data from mongodb database */

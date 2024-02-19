@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "@/app/lib/dbConnect";
-import Pet,{ Pets } from "@/app/lib/models/pet";
+import Pet,{ Pets } from "@/app/lib/models/user";
 
 export default async function handler(
   req: NextApiRequest,

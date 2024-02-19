@@ -16,7 +16,7 @@ const Navbar = (props: Props) => {
                 </div>
                 <div className=" h-6 pt-px pb-0.5 justify-center items-start gap-5 flex">
                     <div className="w-[43px] self-stretch justify-center items-center flex">
-                        <Link href='/' className="w-[43px] text-white text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Home</Link>
+                        <Link href='/choices' className="w-[43px] text-white text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Choices</Link>
                     </div>
                     <div className="grow shrink basis-0 self-stretch justify-center items-center flex">
                         <Link href='#' className="w-[60px] text-white text-sm font-normal font-['Segoe UI Emoji'] leading-normal">Features</Link>

@@ -15,7 +15,7 @@ export default function Home() {
           <div className="w-[82px] text-center text-white text-sm font-semibold font-['Roboto'] leading-normal">Get Started</div>
         </div>
       </section>
-      <section className="w-full mt-10">
+      <section className="w-full mb-10 mt-10">
         <div className="grow shrink basis-0 self-stretch px-4 ">
           <div className=" justify-center  items-center  flex">
             <div className="relative flex-col justify-start items-start flex">
