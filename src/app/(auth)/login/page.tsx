@@ -3,6 +3,8 @@ import Link from "next/link"
 
 
 type Props = {}
+const test=""
+
 
 const page = (props: Props) => {
   return (
