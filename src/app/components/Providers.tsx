@@ -4,6 +4,7 @@ import { PropsWithChildren, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { trpc } from "../_trpc/client"
 import { httpBatchLink } from "@trpc/client"
+import { SessionProvider } from "next-auth/react"
 
 const Providers = ({ children }: PropsWithChildren) => {
 
@@ -16,6 +17,7 @@ const Providers = ({ children }: PropsWithChildren) => {
         ],
     }))
     return (
+      
         <trpc.Provider queryClient={queryClient} client={trpcClient}>
             <QueryClientProvider client={queryClient}>
                 {children}
