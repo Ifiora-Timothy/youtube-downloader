@@ -4,22 +4,15 @@ import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 
 interface FormData {
-  name: string;
-  owner_name: string;
-  species: string;
-  age: number;
-  poddy_trained: boolean;
-  diet: string[];
-  image_url: string;
-  likes: string[];
-  dislikes: string[];
+  username: string;
+  email: string;
+  password: string;
 }
 
 interface Error {
-  name?: string;
-  owner_name?: string;
-  species?: string;
-  image_url?: string;
+  username?: string;
+  email?: string;
+  password?: string;
 }
 
 type Props = {
@@ -46,33 +39,7 @@ const Form = ({ formId, petForm, forNewPet = true }: Props) => {
     dislikes: petForm.dislikes,
   });
 
-  /* The PUT method edits an existing entry in the mongodb database. */
-  const putData = async (form: FormData) => {
-    const { id } = router.query;
 
-    try {
-      const res = await fetch(`/api/pets/${id}`, {
-        method: "PUT",
-        headers: {
-          Accept: contentType,
-          "Content-Type": contentType,
-        },
-        body: JSON.stringify(form),
-      });
-
-      // Throw error with status code in case Fetch API req failed
-      if (!res.ok) {
-        throw new Error(res.status.toString());
-      }
-
-      const { data } = await res.json();
-
-      mutate(`/api/pets/${id}`, data, false); // Update the local data without a revalidation
-      router.push("/");
-    } catch (error) {
-      setMessage("Failed to update pet");
-    }
-  };
 
   /* The POST method adds a new entry in the mongodb database. */
   const postData = async (form: FormData) => {

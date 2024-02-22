@@ -38,7 +38,7 @@ async function dbConnect() {
     throw e;
   }
 
-  return cached.conn;
+  return cached.conn;           
 }
 
 export default dbConnect;

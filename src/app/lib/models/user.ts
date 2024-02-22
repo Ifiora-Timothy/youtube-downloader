@@ -6,7 +6,7 @@ export interface Users extends mongoose.Document {
   email: string;
   password: string;
   formdata:boolean
-}
+}                           
 interface userModel extends Model<Users>{
   createUser(data:FormData):FormData
 }
