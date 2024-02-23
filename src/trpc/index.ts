@@ -62,47 +62,45 @@ export const appRouter = router({
         const form = opts.input
         const { email, password } = form
         try {
-            console.log(form)
-            const res = await signIn('credentials', {email:email, password: password, redirect: true});
-            console.log(res, "authresponse")
+            const res = await signIn('credentials', { email: email, password: password, redirect: false });
             const session = await auth()
-            console.log(session,"session")
             return { success: true }
         }
         catch (err: any) {
             if (isRedirectError(err)) {
-                console.log("redirect error lol",err);
-                throw err
+                throw new TRPCError({
+                    code: "METHOD_NOT_SUPPORTED",
+                    message: err.message,
+                })
 
             }
             if (err instanceof Error) {
-                const { type, cause } = err as AuthError;
+                const { type, cause, message } = err as AuthError;
                 switch (type) {
                     case "CredentialsSignin":
-                        console.log("iNVALID CREDENTIALS")
-                        return "iNVALID CREDENTIALS";
+                        throw new TRPCError({
+                            code: "UNAUTHORIZED",
+                            message: "iNVALID CREDENTIALS",
+                        });
                     case "CallbackRouteError":
-                        console.log(cause?.err?.toString())
-                        return cause?.err?.toString();
+                        throw new TRPCError({
+                            code: "UNAUTHORIZED",
+                            message: cause?.err?.message,
+                        });
 
                     default:
-
-                        console.log(err.message)
                         throw new TRPCError({
                             code: "UNAUTHORIZED",
                             message: err.message,
                         })
-                        return "something went wrong"
-
                 }
             }
-            console.log('err reached')
-            console.log(err)
-            // throw  new TRPCError({
-            //     code: "UNAUTHORIZED",
-            //     message:err.message,
-            //   })
-            return err.message
+
+            throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: err.message,
+            })
+            // return err.message
 
         }
 

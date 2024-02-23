@@ -15,64 +15,41 @@ export const { handlers: { GET, POST },
     },
     callbacks: {
       async signIn({ user, account, profile, email, credentials }) {
-        console.log("reached signIn")
         return true
-      }
-      ,
+      },
       async redirect({ url, baseUrl }) {
-        console.log("reached dd4");
-        console.log(url, baseUrl)
         if (url.startsWith("/")) return `${baseUrl}${url}`
         else if (new URL(url).origin === baseUrl) return url
         // return url.startsWith(baseUrl)?url:baseUrl
         return baseUrl
-      }
-      ,
-
-      async jwt({ token, trigger,account, session }) : Promise<JWT> {
+      },
+      async jwt({ token, trigger, account, session }): Promise<JWT> {
         if (trigger === "update" && session?.name) {
           // Note, that `session` can be any arbitrary object, remember to validate it!
           token.name = session.name
         }
         if (account && account.type === 'credentials') {
           token.userId = account.providerAccountId;
-          console.log('reached jwt1',session)
         }
         return token
       },
-     
       async session({ session, token, user }) {
         session.user.id = token.userId;
-console.log(session,"session")
         return session;
       },
-
-
     },
-    events:{
+    events: {
       async signIn({ user, account, profile, isNewUser }) {
-        console.log("reached signIn event")
       },
       async signOut(message) {
-        console.log("reached signOut event")
-        
       },
       async updateUser({ user }) {
-        console.log("reached updateUser event")
-       
-      }
-      ,
+      },
       async createUser({ user }) {
-        console.log("reached createUse eventr")
-       
       },
       async linkAccount({ user, account, profile }) {
-        console.log("reached linkAccount event")
-       
       },
       async session({ session }) {
-        console.log("reached session event")
-       
       }
     },
     pages: {

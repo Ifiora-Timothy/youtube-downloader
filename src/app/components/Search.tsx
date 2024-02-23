@@ -15,7 +15,7 @@ const Search = (props: Props) => {
     const [isSearch, setIsSearch] = useState(false)
     const [searchResults,setSearchResults]=useState([])
     const inputRef = useRef<HTMLInputElement>(null);
-    console.log(searchResults) 
+   
     
     return (
         <div className="w-full flex flex-col items-center  relative">

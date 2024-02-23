@@ -1,15 +1,10 @@
 "use client"
-import { AlertCircle, AlignRightIcon, ArrowRightIcon, EyeOff, Key, Loader2, LockKeyhole, MailOpen } from "lucide-react"
-import { trpc } from "../_trpc/client";
+import { AlertCircle, ArrowRightIcon, EyeOff, Loader2, LockKeyhole, MailOpen } from "lucide-react";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-//import { Authenticate } from "../lib/action";
-import { signIn, signOut } from "../../../auth";
-import { TRPCError } from "@trpc/server";
-import { loginFn } from "../lib/action";
-import { useSession,getSession } from "next-auth/react";
-import { auth } from "../../../auth";
-import getUserSession from "../server/getUserSession";
+import { trpc } from "../_trpc/client";
+import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export interface login {
     email: string;
@@ -18,20 +13,36 @@ export interface login {
 
 
 const Login = () => {
-  //  const {data:session,status}= useSession()
     const [errorMessage, dispatch] = useFormState(Authenticate, undefined);
     const [form, setForm] = useState<login>({ email: "", password: "" });
 
+    const searchParams=useSearchParams()
+    const router= useRouter()
+    const origin=searchParams.get('origin')
 
+    const mutation = trpc.authLogin.useMutation({
+        onSuccess:async(e)=>{
+            toast.success("Logged in successfully")
+            router.refresh()
+            console.log("logged in successfully")
 
-    const mutation= trpc.authLogin.useMutation()
-  
+            if(origin) router.push(`/${origin}`);
+            router.push('/choices')
+        },
+        onError:async(err)=>{
+         
+if(err.data?.code==="UNAUTHORIZED"){
+    toast.error(err.message)
+}
+        }
+    })
+
     //handle input change
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
         const target = e.target;
-        const value =target.value;
+        const value = target.value;
         const name = target.name;
         setForm({
             ...form,
@@ -43,54 +54,41 @@ const Login = () => {
         email?: string;
         password?: string;
     }
-    
+
     async function Authenticate(
-      prevState: string | undefined,
-      formData: FormData,
+        prevState: string | undefined,
+        formData: FormData,
     ) {
-     /* Makes sure pet info is filled for pet name, owner name, species, and image url*/
-     const formValidate = () => {
-        let err: Error = {};
-    
-        if (!formData.get("email")) err.email = "email is required";
-        if (!formData.get("password")) err.password = "password is required";
-        return err;
-    };
-    
-    
-       const errs= formValidate();
-    console.log(Object.keys(errs).length)
-       if (Object.keys(errs).length === 0) {
-    
-        const email = formData.get("email") as string
-        const password = formData.get("password") as string
-    
-       mutation.mutate({email,password})
-   
-       }
-      else{
-        return `${errs?.email}${errs?.password}`
-      }
-    
+        /* Makes sure pet info is filled for pet name, owner name, species, and image url*/
+        const formValidate = () => {
+            let err: Error = {};
+
+            if (!formData.get("email")) err.email = "email is required";
+            if (!formData.get("password")) err.password = "password is required";
+            return err;
+        };
+
+
+        const errs = formValidate();
+        if (Object.keys(errs).length === 0) {
+
+            const email = formData.get("email") as string
+            const password = formData.get("password") as string
+
+            mutation.mutate({ email, password })
+
+        }
+        else {
+            return `${errs?.email}${errs?.password}`
+        }
+
         return "success"
-    
+
     }
     //TODO: check in realtime if the username or email already exist using server actions befro the suer is actually signed up
 
     return (
-        <form 
-        //action={loginFn}
-         action={dispatch}
-         >
-            {/* {(status ==="loading")?
-            <div>loading...</div>:
-            (status ==="unauthenticated")?
-            <div>unauthenticated...</div>:
-            (status === "authenticated")?
-            <div>authenticated</div>:
-            <div>unknown status</div>
-
-            } */}
+        <form action={dispatch}>
             <div className="w-[276px]  text-gray-900 flex flex-col gap-4 mt-3">
                 <div className="w-[276px]  h-[35px] pl-[11px] pr-[136px] pt-1.5 pb-[5px] left-0 bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
                     <div className="self-stretch justify-start items-center gap-1 inline-flex">

@@ -9,12 +9,6 @@ export interface Users extends mongoose.Document {
   username: string;
   email: string;
   password: string;
-<<<<<<< HEAD
-  formdata:boolean
-}                           
-interface userModel extends Model<Users>{
-  createUser(data:FormData):FormData
-=======
   credentials: boolean;
   refreshToken?: string[];
 }
@@ -27,27 +21,20 @@ interface userModel extends Model<Users> {
 }
 interface loginModel extends Model<loginUser> {
   validateLogin(data: loginUser): { name: string, email: string, id: string }
->>>>>>> 6b3a821253e7bee2a11a223f1b88f2adda40919f
 }
 
-const validateEmailandPassword = async (email: string, password: string) => {
+const validateEmailandPassword = async (email: string, password: string,type?:string) => {
   if (!email || !password) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Please provide all the required fields",
-    })
+    return new Error("Please provide all the required fields")
+
   }
   if (!validator.isEmail(email)) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Please provide a valid email",
-    })
+    if(type==="login") return new Error("invalid Credentials");
+    return new Error("Please provide a valid email")
   }
   if (!validator.isStrongPassword(password, { minSymbols: 0 })) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Please provide a strong password",
-    })
+    if(type==="login") return new Error("invalid Credentials");
+      return new Error("Please provide a strong password")
   }
 
 }
@@ -147,25 +134,21 @@ UserSchema.statics.validateLogin = async function (data: loginUser) {
 
   const { email, password } = data
   //if it does not exist thrug a trpc error
-  await validateEmailandPassword(email, password)
-
+ const validate= await validateEmailandPassword(email, password,"login")
+if(validate instanceof Error){
+  return new Error(validate.message)
+}
   //check if the email or username already exists
 
   const emailExist = await this.findOne({ email })
   if (!emailExist) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Email does not exist",
-    })
+   return new Error("Email does not exist")
   }
 
 
   const passwordMatch = await bcrypt.compare(password, emailExist.password)
   if (!passwordMatch) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Password does not match",
-    })
+   return new Error("Password does not match")
   }
 
 

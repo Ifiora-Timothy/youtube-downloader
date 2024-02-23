@@ -1,4 +1,3 @@
-//ts-worksheet-with-variables
 "use client"
 import { trpc } from '@/app/_trpc/client'
 import { Loader2 } from 'lucide-react'
@@ -11,22 +10,16 @@ const page = (props: Props) => {
     const router = useRouter()
     const searchparams=useSearchParams()
     const origin =searchparams.get('origin')
-    console.log(origin)//?
     
     const { data,isError,isLoadingError,isFetched, isLoading } = trpc.authCallback.useQuery(undefined)
     if (data) {
-        console.log(data)//?
-        console.log("data")
         router.push(origin?`${origin}`:'/choices')
     }
     if (isLoading) {
-        console.log("isLoading")
     }
     if (isError) {
-        console.log("isError")
     }
     if (isLoadingError) {
-        console.log("isLoadingError")
        
     }
     return (

@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import dbConnect from '@/app/lib/dbConnect';
 import { user} from '@/app/lib/models/user';
 import credentials from 'next-auth/providers/credentials';
+import { TRPCError } from '@trpc/server';
 export const authOptions = {
    
     providers: [
@@ -14,17 +15,30 @@ export const authOptions = {
                 password: { },
             },
             async authorize(credentials, req) {
-                console.log("reached 4");
                 //use mngse shhema  valids
                 const email = credentials?.email; // Declare the 'password' variable
                 const password = credentials?.password; // Declare the 'password' variable
                 
-                  
+                  try{
                     await dbConnect();
-                     // @ts-ignore
-                    const resp:User = await user.validateLogin({ email, password });
-                    console.log("resp",resp)
-                   return resp;
+                    // @ts-ignore
+                   const resp:User = await user.validateLogin({ email, password });
+                 
+                   if(resp instanceof Error){
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: resp.message,
+                    })
+                   }
+                  return resp;
+                  }
+                  catch(err:any){
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: err.message,
+                    })
+                  }
+                    
             },
             
         

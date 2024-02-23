@@ -25,6 +25,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-emoji-render": "^2.0.1",
+    "sonner": "^1.4.0",
     "swr": "^2.2.5",
     "validator": "^13.11.0",
     "zod": "^3.22.4",

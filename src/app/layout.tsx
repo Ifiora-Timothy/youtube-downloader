@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Providers from "./components/Providers";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,15 +20,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Providers>
+     
       <body className={inter.className}>
+      <Providers>
         <div className="flex w-screen overflow-x-hidden flex-col h-screen">
            <Navbar />
         {children}
         <Footer/>
-        </div>
-       
-      </body></Providers>
+        </div></Providers>
+       <Toaster position="top-right" richColors/>
+      </body>
     </html>
   );
 }

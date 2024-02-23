@@ -3,8 +3,6 @@ import { authOptions } from './auth.config';
  
 export default NextAuth(authOptions).auth;
  
- 
- console.log("reached middleware event")
 export const config = {
 
   // return await updateSession(request);

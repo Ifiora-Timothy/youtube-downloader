@@ -3,7 +3,6 @@
 type Props = {
     className:string
 }
-const test=""
 const SwitchIcon = ({className}: Props) => {
   return (
     <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="inherit" xmlns="http://www.w3.org/2000/svg">
