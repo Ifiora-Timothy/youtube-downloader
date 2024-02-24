@@ -1,5 +1,5 @@
 "use client"
-import { AlertCircle, ArrowRightIcon, EyeOff, Loader2, LockKeyhole, MailOpen } from "lucide-react";
+import { AlertCircle, ArrowRightIcon, Eye, EyeOff, Loader2, LockKeyhole, MailOpen } from "lucide-react";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { trpc } from "../_trpc/client";
@@ -15,25 +15,26 @@ export interface login {
 const Login = () => {
     const [errorMessage, dispatch] = useFormState(Authenticate, undefined);
     const [form, setForm] = useState<login>({ email: "", password: "" });
+    const [isPasswordVisible,setIsPasswordVisible]= useState(false)
 
-    const searchParams=useSearchParams()
-    const router= useRouter()
-    const origin=searchParams.get('origin')
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const origin = searchParams.get('origin')
 
     const mutation = trpc.authLogin.useMutation({
-        onSuccess:async(e)=>{
+        onSuccess: async (e) => {
             toast.success("Logged in successfully")
             router.refresh()
             console.log("logged in successfully")
 
-            if(origin) router.push(`/${origin}`);
+            if (origin) router.push(`/${origin}`);
             router.push('/choices')
         },
-        onError:async(err)=>{
-         
-if(err.data?.code==="UNAUTHORIZED"){
-    toast.error(err.message)
-}
+        onError: async (err) => {
+
+            if (err.data?.code === "UNAUTHORIZED") {
+                toast.error(err.message)
+            }
         }
     })
 
@@ -56,7 +57,7 @@ if(err.data?.code==="UNAUTHORIZED"){
     }
 
     async function Authenticate(
-        prevState: string | undefined,
+        prevState: {email: string | undefined; password: string | undefined}| undefined,
         formData: FormData,
     ) {
         /* Makes sure pet info is filled for pet name, owner name, species, and image url*/
@@ -76,51 +77,53 @@ if(err.data?.code==="UNAUTHORIZED"){
             const password = formData.get("password") as string
 
             mutation.mutate({ email, password })
-
         }
         else {
-            return `${errs?.email}${errs?.password}`
+            return {email:errs?.email,password:errs?.password}
         }
-
-        return "success"
 
     }
     //TODO: check in realtime if the username or email already exist using server actions befro the suer is actually signed up
 
     return (
-        <form action={dispatch}>
-            <div className="w-[276px]  text-gray-900 flex flex-col gap-4 mt-3">
-                <div className="w-[276px]  h-[35px] pl-[11px] pr-[136px] pt-1.5 pb-[5px] left-0 bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
-                    <div className="self-stretch justify-start items-center gap-1 inline-flex">
+        <form className="flex items-center flex-col" action={dispatch}>
+            <div className="w-[276px]  text-gray-900 flex items-center justify-center flex-col gap-4 mt-3">
+                <div className="w-[276px]  h-[35px] px-[11px]  pt-1.5 pb-[5px] left-0 bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
+                    <div className="self-stretch w-full justify-start items-center gap-1 inline-flex">
                         <div className="w-6 h-6 relative">
                             <MailOpen />
                         </div>
-                        <input agitria-label="email" name="email" onChange={handleChange} type="email" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="email@example.com" />
+                        <input agitria-label="email" name="email" onChange={handleChange}  type="email" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="email@example.com" />
                     </div>
                 </div>
+                {errorMessage?.email && (
+                    <div className="flex items-center -mt-[14px] ml-3">
+                        <AlertCircle className="text-xs h-3 w-4  text-opacity-90 text-red-500" />
+                        <p className="text-[10px] truncate text-opacity-90  text-red-500">{errorMessage.email}</p>
+                    </div>
+                )}
                 <div className="w-[272px] h-[34px] px-2.5 py-[5px] left-[2px] bg-white rounded-[21px] shadow shadow-blue-400  drop-shadow-lg justify-start items-center  inline-flex">
                     <div className="justify-start w-full items-center gap-1.5 flex">
                         <div className="w-6 h-6 relative" >
                             <LockKeyhole />
                         </div>
-                        <input aria-label="Password" name="password" onChange={handleChange} type="password" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="Password" />
+                        <input aria-label="Password" name="password" onChange={handleChange} autoComplete="off" aria-autocomplete="none" type={isPasswordVisible?'text':'password'} className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="Password" />
+                   
                     </div>
-                    <div className="w-6 h-6 relative">
-                        <EyeOff />
+                    <div onClick={()=>{setIsPasswordVisible((prev)=>!prev)}} className="w-6 h-6 relative">
+                        {isPasswordVisible?<EyeOff  className="cursor-pointer "/>: <Eye className="cursor-pointer "/>}
                     </div>
                 </div>
+                {errorMessage?.password && (
+                    <div className="flex items-center -mt-[14px] ml-3">
+                        <AlertCircle className="text-xs h-3 w-4  text-opacity-90 text-red-500" />
+                        <p className="text-[10px] truncate text-opacity-90  text-red-500">{errorMessage.password}</p>
+                    </div>
+                )}
             </div>
             <div className="pl-6 mt-10 pr-[21px] py-2 bg-gradient-to-b from-purple-700 to-purple-700 rounded-[53px]  shadow shadow-blue-400  drop-shadow-lg justify-center items-center inline-flex">
                 <LoginButton />
 
-            </div>
-            <div className="flex h-8 items-end space-x-1" aria-live="polite" aria-atomic="true">
-                {errorMessage && (
-                    <>
-                        <AlertCircle className="h-5 w-5 text-red-500" />
-                        <p className="text-sm text-red-500">{errorMessage}</p>
-                    </>
-                )}
             </div>
         </form>
     )

@@ -1,21 +1,29 @@
+"use client"
 import emptyDownloads from '@/app/assets/images/emptyDownloads.png'
 import Image from 'next/image'
+import Lottie from "lottie-react"
+import oops from "@/app/lottie/oops.json"
+import { Suspense } from 'react'
 type Props = {}
 
 const EmptyDownload = (props: Props) => {
+
     return (
-        <div className="w-[896px] h-[300px] px-4 justify-center items-center gap-10 flex">
-            <div className="w-[412px] h-[228px] relative flex-col justify-start items-start flex">
-                <div className="pr-[179px] pb-0.5 justify-start items-center flex">
-                    <div className="w-[233px] text-white text-3xl font-bold font-['Roboto'] leading-9">Let's Get Started</div>
-                </div>
-                <div className="justify-center items-center flex">
-                    <div className="w-[400px] text-zinc-200 mt-3 text-base font-normal font-['Segoe UI Emoji'] "> please Input a URL of the video or click on the switch button if you want to search the video by name.</div>
-                </div>
+        <div className="h-[300px] px-4 justify-center flex-col  items-center flex">
+         
+           <Suspense fallback={<Image height='300' width='400' className='rounded-lg bg-zinc-300' src={emptyDownloads} alt='empty downloads placeholder' />
+          }>
+                  <div className="grow shrink basis-0 h-[270px] w-[340px] pr-3 justify-start items-center flex">
+                <Lottie animationData={oops} loop={false}/>
             </div>
-            <div className="grow shrink basis-0 h-[300px] pr-3 justify-start items-center flex">
-                <Image height='300' width='400' className='rounded-lg' src={emptyDownloads} alt='empty downloads placeholder' />
-            </div>
+          </Suspense>
+          
+          <div className=" h-[228px] w-fit   relative justify-start flex">
+                <div className=" flex items-baseline purpleText text-6xl font-bold font-['Roboto']">OOPS! 
+                <div className="  text-sm font-normal font-['Segoe UI Emoji'] "> Please start typing to search ...</div></div>
+              
+             </div>
+           
         </div>
     )
 }

@@ -3,59 +3,64 @@
 import Image from "next/image"
 import Emoji from "react-emoji-render"
 import HorizontalListCard from "../UI/HorizontalListCard"
-import SearchIcon from "@/app/assets/images/search.svg"
 import SearchCard from "../UI/SearchCard"
 import { useRef, useState } from "react"
 import SwitchIcon from "../assets/images/switch"
 import { clsx } from "clsx"
+import { ArrowLeftRight, Link, TextSearch,Search as SearchIcon } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle } from "@/components/ui/card"
 type Props = {}
 
 const Search = (props: Props) => {
 
     const [isSearch, setIsSearch] = useState(false)
-    const [searchResults,setSearchResults]=useState([])
-    const inputRef = useRef<HTMLInputElement>(null);
+    const [searchResults, setSearchResults] = useState(['dd'])
+   console.log(isSearch);
    
-    
+    const outlineRef=useRef<any>()
+
     return (
-        <div className="w-full flex flex-col items-center  relative">
-            <div className="justify-end w-[357px] mx-auto items-center flex">
-                <div title="toggle between searching with url and with name" onClick={() => {
-                    setIsSearch((prev) => !prev);
-                    if (inputRef.current) {
-                        inputRef.current.focus()
-                    }
-
-                }} className=
-                    {clsx("self-stretch cursor-pointer px-[15px] py-[11px]  bg-purple-500 rounded-tl rounded-bl justify-start items-start gap-2.5 flex", {
-                        "bg-purple-500 hover:bg-purple-400": !isSearch,
-                        "bg-orange-600 hover:bg-orange-400": isSearch
-
-                    })}
-                >
-                    <div className=" relative h-[20px] w-[20px]">
-                        <SwitchIcon className='h-5 w-5  text-orange-600' />
-                    </div>
-                </div>
-                <input ref={inputRef} type="text" placeholder="https://example.com/playlist" className=" text-zinc-100 outline-none font-normal font-['Segoe UI Emoji'] leading-normal border-none placeholder-zinc-400 text-base self-stretch px-[20px] py-[7px] bg-purple-600" />
-                <div className="self-stretch cursor-pointer px-[15px] py-[11px]  hover:bg-purple-400 bg-purple-500 rounded-tr rounded-br justify-start items-start gap-2.5 flex">
-                    <div className=" relative h-[20px] w-[20px]">
-                        <Image height='20' className="" width='20' alt='search icon' src={SearchIcon} />
-                    </div>
-                </div>
+        <div className="w- flex mt-4 flex-col items-center  relative">
+            <div className="justify-end   mx-auto items-stretch  flex">
+                <div  style={{boxShadow:"-3px 1px 33px 7px rgba(165,57,227,0.2)"}}  ref={outlineRef} className={clsx("flex ring-black text-black focus-visible:ring-1  h-fit w-fit shadow-sm  mr-2 rounded-md p-0 m-0 bg-white")}>
+                <Button className="bg-transparent pr-0" disabled variant='ghost'>{isSearch ? <TextSearch className='text-black' /> : <Link className=' text-black' />}</Button>
+                <Input onBlur={()=>outlineRef.current.classList.remove("ring-1")} onFocus={()=>outlineRef.current.classList.add("ring-1")}  
+                className="focus-visible:ring-0 text-zinc-700 shadow-none w-fit outline-none font-normal font-['Segoe UI Emoji']  border-none  "   type="text"
+                 placeholder={isSearch ? "type in the keyword..." : "https://example.com/playlist..."} />
+              </div>
+              <Select onValueChange={(e)=>{if(e==="name")setIsSearch(true);else{setIsSearch(false)}}}>
+                    <SelectTrigger   style={{boxShadow:"-3px 1px 33px 7px rgba(165,57,227,0.2)"}}   className="w-[80px] bg-white">
+                        <SelectValue placeholder='URL'></SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="url">URL</SelectItem>
+                        <SelectItem value="name">NAME</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Button  style={{boxShadow:"-3px 1px 33px 7px rgba(165,57,227,0.2)"}}  variant='default' className=" ml-2 purpleGradient hover:bg-purple-600  ">
+                    Search <SearchIcon  className="text-sm h-[17px]"/>
+                </Button>
             </div>
             {
                 isSearch ?
-                    <div className="rounded ease-in transition-all scrollbar-track-purple-300 scrollbar-thin scrollbar-thumb-rounded scrollbar-track-rounded scrollbar-thumb-orange-600 hover:scrollbar-thumb-orange-800  overflow-y-auto max-h-[300px]  p-3 ml-auto bg-slate-900 bg-opacity-90 top-10 w-[370px] absolute z-10 ">
+                    <div className="rounded ease-in transition-all scrollbar-track-purple-300 scrollbar-thin scrollbar-thumb-rounded scrollbar-track-rounded scrollbar-thumb-orange-600 hover:scrollbar-thumb-orange-800  overflow-y-auto max-h-[300px]  p-3 ml-auto   top-10 w-[470px] absolute z-10 ">
                         <div className=" gap-2   flex items-center justify-center flex-col s">
-                           {
-                            searchResults.length>0?
-                            <SearchCard/>
-                            :
-                            <div className="px-4 text-white text-opacity-55 text-xs ">
-                                <Emoji text="...type in the search box to start searching 🧐"/>
-                            </div>
-                           }
+                            {
+                                searchResults.length > 0 ?
+                                    <SearchCard />
+                                    :
+                                    <Card className="bg-slate-50 w-[400px]">
+                                        <CardHeader className=" pb-0">
+                                            <CardTitle className="purpleText ">OOPS!</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="">
+                                           <Emoji className=" text-xs " text="...type in the search box to start searching 🧐" /> 
+                                        </CardContent>
+                                    </Card>
+                            }
                         </div>
                     </div>
                     : null

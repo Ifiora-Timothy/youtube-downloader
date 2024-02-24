@@ -11,7 +11,7 @@ console.log(currUserSession,"from pages")
 
     return (
         <div className="w-full  h-[90vh] bg-purple-600 justify-center pt-20  flex">
-            <div className="w-[371px] h-[300px]  flex flex-col items-center gap-2 pt-10 bg-white rounded-[19px] shadow">
+            <div className="w-[371px] p-5 h-fit  flex flex-col items-center gap-2 pt-10 bg-white rounded-[19px] shadow">
                 <div className=" bg-red-900 bg-opacity-0 mt-1 justify-center items-center inline-flex">
                     <div className="text-neutral-900 text-xl font-bold font-['Inter']">Log In</div>
                 </div>
