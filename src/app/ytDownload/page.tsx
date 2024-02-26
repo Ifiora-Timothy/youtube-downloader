@@ -1,8 +1,4 @@
-import React from 'react'
-import Downloads from '../components/Downloads'
-import EmptyDownload from '../components/EmptyDownload'
 import Search from '../components/Search'
-import { ArrowLeftRight, Link, TextSearch } from 'lucide-react'
 import SingleDownloads from '../components/SingleDownloads'
 type Props = {}
 

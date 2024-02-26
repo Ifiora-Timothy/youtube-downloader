@@ -1,8 +1,9 @@
 "use client"
 import { trpc } from "@/app/_trpc/client";
 import clsx from "clsx";
-import { CheckSquare2, CircleUserRound, EyeOff, LockKeyhole, MailOpen } from "lucide-react"
+import { CheckSquare2, CircleUserRound, Eye, EyeOff, LockKeyhole, MailOpen } from "lucide-react";
 import { useState } from "react";
+import CustomInput from "../UI/CustomInput";
 
 export interface FormData {
     username: string;
@@ -19,8 +20,9 @@ interface Error {
 
 const Signup = () => {
     const [form, setForm] = useState<FormData>({ username: "", email: "", password: "", credentials: false });
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
-    const mutation= trpc.authSignup.useMutation()
+    const mutation = trpc.authSignup.useMutation()
 
     //handle input change
     const handleChange = (
@@ -53,8 +55,8 @@ const Signup = () => {
         const errs = formValidate();
 
         if (Object.keys(errs).length === 0) {
-           mutation.mutate(form)
-        } 
+            mutation.mutate(form)
+        }
     };
 
 
@@ -63,63 +65,35 @@ const Signup = () => {
 
 
 
-  return (
-    <>
-    <form className="flex flex-col items-center" onSubmit={handleSubmit}>
-
-
-    <div className="w-[276px] flex flex-col text-gray-900 gap-4 mt-2  ">
-        <div className="w-[276px] h-[35px] px-2.5  pt-1.5 pb-[5px] left-0  bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
-            <div className="self-stretch w-full justify-start items-center gap-[5px] inline-flex">
-                <div className="w-6 h-6 relative">
-                    <CircleUserRound />
+    return (
+        <>
+            <form className="flex mt-2 flex-col items-center" onSubmit={handleSubmit}>
+                <div className="w-[276px] flex flex-col text-gray-900 gap-4 mt-2  ">
+                    <CustomInput placeholder="username" name="username" Icon={() => <CircleUserRound />} type="text" isDouble={false} onChange={handleChange} />
+                    <CustomInput placeholder="email@example.com" Icon={() => <MailOpen />} name="email" type="email" isDouble={false} onChange={handleChange} />
+                    <CustomInput placeholder="Password" name="password" IconOpen={() => <Eye className="cursor-pointer " />} IconClose={() => <EyeOff className="cursor-pointer " />} Icon={() => <LockKeyhole />} type="password" isDouble={true} setIsPasswordVisible={setIsPasswordVisible} onChange={handleChange} isPasswordVisible={isPasswordVisible} />
                 </div>
-                <input name="username" onChange={handleChange} type="text" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="Name" />
-            </div>
-        </div>
-        <div className="w-[276px] h-[35px] px-[11px]  pt-1.5 pb-[5px] left-0 bg-white rounded-[21px]  shadow shadow-blue-400  drop-shadow-lg justify-start items-center inline-flex">
-            <div className="self-stretch w-full justify-start items-center gap-1 inline-flex">
-                <div className="w-6 h-6 relative">
-                    <MailOpen />
+                <div className="p-0.5 mt-2 items-center gap-px inline-flex">
+                    <div className="w-[17px] h-[17px] relative">
+                        <input onChange={handleChange} type="checkbox" className="hidden" name="credentials" id="credentials" hidden />
+                        <label htmlFor="credentials">
+                            <CheckSquare2 className={clsx("text  w-[17px] h-[17px] text-black text-xs", {
+                                " bg-purple-900 text-white": form.credentials
+                            })} />
+                        </label>
+                    </div>
+                    <div className="pl-[3px] pr-px pt-1 pb-[3px] ">
+                        <div className="text-right flex"><span className=" text-[9px] text-zinc-700 font-light font-['Inter'] leading-[9.14px]">i read and agree to the </span><span className="text-blue-700 ml-[1px] underline text-[9px] font-light font-['Inter'] leading-[9.14px]"> terms and Conditions</span></div>
+                    </div>
                 </div>
-                <input name="email" onChange={handleChange} type="email" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="Email" />
-            </div>
-        </div>
-        <div className="w-[272px] h-[34px] px-2.5 py-[5px] left-[2px] bg-white rounded-[21px] shadow shadow-blue-400  drop-shadow-lg justify-start items-center  inline-flex">
-            <div className="justify-start w-full items-center gap-1.5 flex">
-                <div className="w-6 h-6 relative" >
-                    <LockKeyhole />
+                <div className=" mt-[20px] w-[140px]  py-2 bg-gradient-to-b from-purple-700 to-purple-700 rounded-[53px]  shadow shadow-blue-400  drop-shadow-lg justify-center items-center flex">
+                    <button disabled={mutation.isPending} type="submit" className="text-white block text-[10px] font-bold font-['Inter']">CREATE ACCOUNT</button>
                 </div>
-                <input name="password" onChange={handleChange} type="password" className="pl-px w-full pr-[10px]  font-medium font-['Inter'] pt-[3px] bg-white bg-opacity-0 outline-none placeholder:text-stone-400 text-xs border-none" placeholder="Password" />
-            </div>
-            <div className="w-6 h-6 relative">
-                <EyeOff />
-            </div>
-        </div>
-    </div>
-
-    <div className="p-0.5 mt-2 items-center gap-px inline-flex">
-        <div className="w-[17px] h-[17px] relative">
-            <input onChange={handleChange} type="checkbox" name="credentials" id="credentials" hidden />
-            <label htmlFor="credentials">
-                <CheckSquare2 className={clsx("text  w-[17px] h-[17px] text-black text-xs", {
-                    " bg-purple-900 text-white": form.credentials
-                })} />
-            </label>
-
-        </div>
-        <div className="pl-[3px] pr-px pt-1 pb-[3px] ">
-            <div className="text-right flex"><span className=" text-[9px] text-zinc-700 font-light font-['Inter'] leading-[9.14px]">i read and agree to the </span><span className="text-blue-700 ml-[1px] underline text-[9px] font-light font-['Inter'] leading-[9.14px]"> terms and Conditions</span></div>
-        </div>
-    </div>
-    <div className=" mt-[1px] w-[140px]  py-2 bg-gradient-to-b from-purple-700 to-purple-700 rounded-[53px]  shadow shadow-blue-400  drop-shadow-lg justify-center items-center flex">
-        <button disabled={mutation.isPending} type="submit" className="text-white block text-[10px] font-bold font-['Inter']">CREATE ACCOUNT</button>
-    </div>
-</form>
- {mutation.isError && <div className="text-red-500 text-xs font-semibold font-['Inter']">{mutation.error.message}</div>} 
-                {mutation.isSuccess && <div className="text-green-500 text-xs font-semibold font-['Inter']">Account created successfully</div>} 
-           </>
-  )
+            </form>
+            {mutation.isError && <div className="text-red-500 text-xs font-semibold font-['Inter']">{mutation.error.message}</div>}
+            {mutation.isSuccess && <div className="text-green-500 text-xs font-semibold font-['Inter']">Account created successfully</div>}
+        </>
+    )
 }
 
 export default Signup

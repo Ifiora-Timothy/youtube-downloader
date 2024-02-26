@@ -1,15 +1,13 @@
 
 import { FormData } from '@/app/components/Signup';
-import { publicProcedure, router } from './trpc'
-import { Users, user } from '@/app/lib/models/user'
-import { z } from 'zod';
 import dbConnect from '@/app/lib/dbConnect';
-import { getSession, login } from '@/app/lib/authFunctions';
-import { auth, signIn } from '../../auth';
+import { user } from '@/app/lib/models/user';
 import { TRPCError } from '@trpc/server';
-import { zfd } from 'zod-form-data';
 import { AuthError } from 'next-auth';
 import { isRedirectError } from 'next/dist/client/components/redirect';
+import { z } from 'zod';
+import { auth, signIn } from '../../auth';
+import { publicProcedure, router } from './trpc';
 
 
 export const appRouter = router({
@@ -64,9 +62,10 @@ export const appRouter = router({
         try {
             const res = await signIn('credentials', { email: email, password: password, redirect: false });
             const session = await auth()
-            return { success: true }
+            return {message:"success"}
         }
         catch (err: any) {
+            
             if (isRedirectError(err)) {
                 throw new TRPCError({
                     code: "METHOD_NOT_SUPPORTED",
