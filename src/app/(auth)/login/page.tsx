@@ -1,14 +1,9 @@
 import Login from "@/app/components/Login";
-import getUserSession from "@/app/server/getUserSession";
-import Link from "next/link"
+import Link from "next/link";
 
 
 const page = async() => {
  
-    const currUserSession=  await getUserSession()
-console.log(currUserSession,"from pages")
-
-
     return (
         <div className="w-full  h-[90vh] bg-purple-600 justify-center pt-20  flex">
             <div className="w-[371px] p-5 h-fit  flex flex-col items-center gap-2 pt-10 bg-white rounded-[19px] shadow">

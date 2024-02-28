@@ -26,7 +26,6 @@ const Login = () => {
         onSuccess: async (e) => {
             toast.success("Logged in successfully")
             router.refresh()
-            console.log("logged in successfully")
 
             if (origin) router.push(`/${origin}`);
             router.push('/choices')
@@ -48,7 +47,6 @@ const Login = () => {
         const target = e.target;
         const value = target.value;
         const name = target.name;
-        console.log(value);
 
         setForm({
             ...form,
@@ -86,8 +84,6 @@ const Login = () => {
             mutation.mutate({ email, password })
             
             const res = mutation.data
-            console.log(res);
-
         }
         else {
             return { email: errs?.email, password: errs?.password }

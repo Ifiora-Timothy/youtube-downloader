@@ -2,12 +2,13 @@
 import { FormData } from '@/app/components/Signup';
 import dbConnect from '@/app/lib/dbConnect';
 import { user } from '@/app/lib/models/user';
+import { getVideoInfo } from '@/app/lib/yt/ytdlUtils';
 import { TRPCError } from '@trpc/server';
 import { AuthError } from 'next-auth';
 import { isRedirectError } from 'next/dist/client/components/redirect';
 import { z } from 'zod';
 import { auth, signIn } from '../../auth';
-import { publicProcedure, router } from './trpc';
+import { privateProcedure, publicProcedure, router } from './trpc';
 
 
 export const appRouter = router({
@@ -62,10 +63,10 @@ export const appRouter = router({
         try {
             const res = await signIn('credentials', { email: email, password: password, redirect: false });
             const session = await auth()
-            return {message:"success"}
+            return { message: "success" }
         }
         catch (err: any) {
-            
+
             if (isRedirectError(err)) {
                 throw new TRPCError({
                     code: "METHOD_NOT_SUPPORTED",
@@ -102,7 +103,38 @@ export const appRouter = router({
             // return err.message
 
         }
+    }),
+    getVideoInfo: privateProcedure.input(
+        z.object({
+            url: z.string().startsWith("https://"),
+        })
+    ).query(async ({ ctx, input }) => {
+        const { userId, user: userInfo } = ctx
+        try {
 
+            await dbConnect()
+
+            //@ts-ignore
+            const resp:any = await user.findByEmailAndUsername({ username: userInfo.name, email: userInfo.email })
+          
+            if (resp.success) {
+                const vidInfo = await getVideoInfo(input.url)
+               // console.log(vidInfo,"index page");
+                
+                return {vidInfo}
+            }
+            throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: "unknown cause",
+            })
+
+        }
+        catch (err: any) {
+            throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: err.message,
+            })
+        }
 
     })
 

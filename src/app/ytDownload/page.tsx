@@ -1,10 +1,14 @@
+
+import DownloadContaner from '../components/DownloadContaner'
 import Search from '../components/Search'
-import SingleDownloads from '../components/SingleDownloads'
+import { DataProvider } from '../providers/data'
 type Props = {}
 
 const YtDownload = (props: Props) => {
-    return (
 
+
+    return (
+<DataProvider>
         <div className="w-screen  px-16 pb-[186px] bg-purple-900 justify-center flex items-start">
             <div className="w-[1152px] mt-7  p-8 justify-center items-center flex">
                 <div className="w-[1088px] p-6 foregroundGradient rounded-lg flex-col justify-center items-center  flex">
@@ -17,11 +21,11 @@ const YtDownload = (props: Props) => {
                         </div>
                         <Search />
                     </div>
-                    <SingleDownloads />
+                    <DownloadContaner />
                 </div>
             </div>
         </div>
-
+</DataProvider>
     )
 }
 

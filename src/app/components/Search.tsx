@@ -6,79 +6,128 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { clsx } from "clsx"
-import { Link, Search as SearchIcon, TextSearch } from "lucide-react"
-import { useRef, useState } from "react"
-import { useForm } from "react-hook-form"
+import { Link, Loader2, Search as SearchIcon, TextSearch } from "lucide-react"
+import { useContext, useState } from "react"
+import { Control, useForm } from "react-hook-form"
 import { z } from "zod"
-import { getVideoInfo } from "../lib/yt/ytdlUtils"
+import { trpc } from "../_trpc/client"
+import { DataContext } from "../providers/data"
 import TextComponent from "./TextComponent"
 type Props = {}
 const formSchema = z.object({
-    url: z.string().startsWith("http")
+    url: z.string().startsWith('https://', { message: "Must provide a secure URL" })
 })
+type vid={
+    author:string,
+    title:string,
+    lengthInSecs:number,
+    uploadDate:string,
+    thumbnail:{
+        url:string,
+        width:number,
+        height:number
+    }
+}
+
+export interface IsingleVid{
+    videos:vid
+}
+
+export interface ImultipleVid{
+    videos:Array<vid>
+}
+
+export interface Iplaylist{
+    author:string,
+    listTitle:string,
+    totalLengthInSecs:number,
+    uploadDate:string,
+    thumbnail:{
+        url:string,
+        width:number,
+        height:number
+    }
+    videos:Array<vid>
+}
+export type vidType=IsingleVid|ImultipleVid|Iplaylist
+
+
+
 const Search = (props: Props) => {
 
     const [isSearch, setIsSearch] = useState(false)
     const [searchResults, setSearchResults] = useState([])
+    const [url,setUrl]=useState<string>('')
 
-    const outlineRef = useRef<HTMLParagraphElement>(null)
-    const inputRef = useRef<HTMLInputElement | null>(null)
+    const context = useContext(DataContext)
 
+    const setData = context.setData
+
+
+    const query = trpc.getVideoInfo.useQuery({url:url},{enabled:!!url})
+
+    if(query.isSuccess && query.data.vidInfo ){
+    setData(query.data.vidInfo)
+    //console.log(query.data);
+    
+    }
+  
+    
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+        resolver: async (data, context, options) => {
+          return zodResolver(formSchema)(data, context, options);
+
+
+        },
         defaultValues: {
             url: ""
         }
     })
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const vidInfo=await getVideoInfo(values.url)
-            console.log(vidInfo);
-            
-        
+     
+       setUrl(values.url)
+
     }
-    console.log(outlineRef.current?.innerHTML)
+  
     return (
         <div className="w- flex mt-4 flex-col items-center  relative">
             <div className="justify-end   mx-auto items-stretch  flex">
                 <div
-               //  style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} 
-                 className={clsx("flex  text-black focus-visible:ring-1  h-fit w-fit   mr-2 rounded-md p-0 m-0")}>
+                    //  style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} 
+                    className={clsx("flex  text-black focus-visible:ring-1  h-fit w-fit   mr-2 rounded-md p-0 m-0")}>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-x-4 bg-none space-y-0 items-center flex gap-1">
-                           <div style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} className="relative w-fit rounded-md shadow-sm bg-white">
-                           <Button className="bg-transparent absolute inset-y-0  left-0 top-1/2 transform -translate-y-1/2 flex items-center pl-3" disabled variant='ghost'>
-                            {isSearch ? <TextSearch className='text-purple-900 ' /> : <Link className=' text-purple-900' />}
-                            </Button>
-                           <FormField  control={form.control} name="url"
-                                render={({ field }) => (
-                                    <>
-                                    <FormItem className="block w-fit rounded-md border-0   pl-7 pr-20 ring-1 ring-inset ring-gray-300 focus-within:ring-1 focus-within:ring-inset focus-within:ring-purple-600   ">
-                                        <FormControl>
-                                            <Input
-                                                className="focus-visible:ring-0 text-gray-900  shadow-none w-fit  placeholder:text-gray-400 outline-none font-normal font-['Segoe UI Emoji'] sm:text-sm sm:leading-6    border-none  " type="text"
-                                                placeholder={isSearch ? "type in the keyword..." : "https://example.com/playlist..."} />
-                                        </FormControl>
-                                        
-                                    </FormItem>
-                                    <FormMessage className="absolute w-max left-1/2 transform -translate-x-1/2" id="text" /></>
-                                )} />
-                           </div>
-                           
-                          <div style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} className="rounded">
-                             <Select  onValueChange={(e) => { if (e === "name") setIsSearch(true); else { setIsSearch(false) } }}>
-                                <SelectTrigger  className="w-[80px] ring-1 border-none focus:ring-purple-600  ring-gray-300 bg-white">
-                                    <SelectValue placeholder='URL'></SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="url">URL</SelectItem>
-                                    <SelectItem value="name">NAME</SelectItem>
-                                </SelectContent>
-                            </Select>
-                          </div>
-                           
-                            <Button style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} variant='default' className=" ml-2 ring-1 ring-inset ring-gray-300 purpleGradient hover:bg-purple-600  ">
-                                Search <SearchIcon className="text-sm h-[17px]" />
-                            </Button>
+                            <div style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} className="relative w-fit rounded-md shadow-sm bg-white">
+                                <Button className="bg-transparent absolute inset-y-0  left-0 top-1/2 transform -translate-y-1/2 flex items-center pl-3" disabled variant='ghost'>
+                                    {isSearch ? <TextSearch className='text-purple-900 ' /> : <Link className=' text-purple-900' />}
+                                </Button>
+                                <FormField control={form.control} name="url"
+                                    render={({ field }) => (
+                                        <FormItem className="block w-fit rounded-md border-0   pl-7 pr-20 ring-1 ring-inset ring-gray-300 focus-within:ring-1 focus-within:ring-inset focus-within:ring-purple-600   ">
+                                            <FormControl>
+                                                <Input
+                                                    className="focus-visible:ring-0 text-gray-900  shadow-none w-fit  placeholder:text-gray-400 outline-none font-normal font-['Segoe UI Emoji'] sm:text-sm sm:leading-6    border-none  " type="text"
+                                                    placeholder={isSearch ? "type in the keyword..." : "https://example.com/playlist..."}  {...field} />
+                                            </FormControl>
+                                            <FormMessage className="absolute w-max left-1/2 transform -translate-x-1/2" id="text" />
+                                        </FormItem>
+
+                                    )} />
+                            </div>
+
+                            <div style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} className="rounded">
+                                <Select onValueChange={(e) => { if (e === "name") setIsSearch(true); else { setIsSearch(false) } }}>
+                                    <SelectTrigger className="w-[80px] ring-1 border-none focus:ring-purple-600  ring-gray-300 bg-white">
+                                        <SelectValue placeholder='URL'></SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="url">URL</SelectItem>
+                                        <SelectItem value="name">NAME</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <SubmitButton isSubmitting={query.isFetching} control={form.control}/>
                         </form>
                     </Form>
                 </div>
@@ -96,3 +145,20 @@ const Search = (props: Props) => {
 }
 
 export default Search
+
+
+function SubmitButton({control,isSubmitting }: {control:Control<{url: string;}, any, {url: string;}>,isSubmitting:boolean }) {
+ 
+    //set the ariaDisabled to true if the form is submitting
+    return (
+        <Button  type="submit" style={{ boxShadow: "-3px 1px 33px 7px rgba(165,57,227,0.2)" }} className=" ml-2 ring-1 ring-inset ring-gray-300 purpleGradient hover:bg-purple-600  ">
+            {isSubmitting ? (
+                <Loader2 className='h-5 w-5 animate-spin text-gray-50 ' />
+            ) : (
+                <>
+                    Search <SearchIcon className="text-sm h-[17px]" />
+                </>
+            )}
+        </Button>
+    )
+}
