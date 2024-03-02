@@ -10,6 +10,7 @@ const isAuth=middleware(async(opts)=>{
 
     if( !currUserSession ){
         throw new TRPCError({
+            cause:"not authenticated",
             code:"UNAUTHORIZED",
             message:"please login to continue"
         })
@@ -17,6 +18,7 @@ const isAuth=middleware(async(opts)=>{
     const {user}= currUserSession
     if(!user || !user.id){
         throw new TRPCError({
+            cause:"not authenticated",
             code:"UNAUTHORIZED",
             message:"please relogin to continue"
         })

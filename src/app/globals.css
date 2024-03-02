@@ -96,3 +96,26 @@
 .foregroundGradient{
   background: linear-gradient(to top,#d9e0e7 1%,hsl(0deg 0% 100%) 100%);
 }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+ background-color: transparent !important;
+ -webkit-box-shadow:0 0 0 50px white inset ;
+}
+.toastError button{
+background-color: #3cb371 !important;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.slideLeft {
+  animation: slideLeft 0.5s ease forwards;
+}

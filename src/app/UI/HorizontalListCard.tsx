@@ -2,72 +2,95 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import ytdl from "@distube/ytdl-core";
 import { Download } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useContext, useState } from "react";
+//import io from "socket.io-client";
 import { toast } from "sonner";
 import { downloadVideo } from "../lib/yt/ytdlUtils";
+import { DataContext, vidFormat } from "../providers/data";
 
 export type format = {
-  approxDurationMs: string;
-  averageBitrate: number;
+  approxDurationMs?: string;
+  averageBitrate?: number;
   bitrate: number;
   contentLength: string;
   qualityLabel: string;
   url: string;
   itag: number;
 };
-type Props = {
-  data: ytdl.MoreVideoDetails;
-  formats: format[];
+type Props = vidFormat;
+
+export const getVideoSize = (quality: string, customFormats: format[]) => {
+  //get the format with the quality
+  const currFormat = customFormats.find(
+    (item) => item.qualityLabel === quality
+  );
+
+  const size = parseInt(currFormat?.contentLength || "0");
+  //check if the size is up to 1mb if yes return the size in mb else return the size in kb
+  var sizeInMb = size / (1024 * 1024);
+  if (sizeInMb > 1) {
+    return `${sizeInMb.toFixed(0)}MB`;
+  } else {
+    return `${(size / 1024).toFixed(0)}KB`;
+  }
 };
 
-const HorizontalListCard = ({ data: item, formats }: Props) => {
-  console.log(item, "horizontal list card");
-  const [quality, setQuality] = useState<string>(formats[0].qualityLabel);
-  const format = formats.find((item) => item.qualityLabel === quality)!;
-  const url = format.url;
+const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
 
-  console.log(url, "url");
+
+  const {setData}=useContext(DataContext)
+  console.log(item, "horizontal list card");
+  const [quality, setQuality] = useState<string>(customFormats[0].qualityLabel);
+  const [progress, setProgress] = useState<number>(0);
+
+  const format = customFormats.find((item) => item.qualityLabel === quality)!;
 
   const downloadVid = async () => {
     console.log("ready to download video");
-    
+
     if (format) {
-      const res = await downloadVideo(item.video_url,item.title, { quality: format.itag });
-      console.log(res, "res");
-      
-      if (res instanceof Error) {
-        toast.error(res.message);
-      }
-      if (res?.message) {
-        toast.success("video downloaded successfully");
-      }
+      const res: Promise<any> = downloadVideo(item.video_url, item.title, {
+        quality: format.itag,
+      });
+      toast.promise(res, {
+        loading: "downloading video",
+        success: (data: { message: "success"; downloadPath: string }) => {
+          return ` success, saved as ${data.downloadPath}`;
+        },
+        error: (err) => {
+          return err.message;
+        },
+      });
     }
   };
 
-const getVideoSize=(quality:string)=>{
-    //get the format with the quality
-const currFormat = formats.find((item) => item.qualityLabel === quality);
-   
-    const size=parseInt(currFormat?.contentLength||"0")
-    //check if the size is up to 1mb if yes return the size in mb else return the size in kb
-    var sizeInMb=size/(1024*1024)
-    if(sizeInMb>1){
-        return `${sizeInMb.toFixed(0)}MB`}
-    else{
-        return `${(size/1024).toFixed(0)}KB`
-    
-    }
-}
-
+  const handlevalueChange = (value: string) => {
+    const videoId=item.video_url
+    setQuality(value);
+    //since data is an array of vidFormat we need to find the object in the data that has the video_url that matches the video_url of the current video and update the object format to the new format
+    const newData=setData((prevData)=>{
+      if(Array.isArray(prevData)){
+        return prevData!.map((item)=>{
+          if(item.videoDetails.video_url===videoId){
+            return {...item,format:format.itag}
+          }
+          return item
+        })
+      }
+      else if(typeof prevData==='object'){
+        return {...prevData as vidFormat,format:format.itag}
+      }
+      return prevData
+    })
+  };
 
   return (
     <Card className="pt-6  ">
@@ -90,16 +113,17 @@ const currFormat = formats.find((item) => item.qualityLabel === quality);
             </div>
             <div className="justify-between w-full items-center mt-1 flex">
               <div className=" text-black text-xs font-normal font-['Segoe UI Emoji'] leading-tight">
-                <span className="font-semibold ">Size:</span> {getVideoSize(quality)}
+                <span className="font-semibold ">Size:</span>{" "}
+                {getVideoSize(quality, customFormats)}
               </div>
               <div className="ml-2 text-black flex items-center text-xs font-normal font-['Segoe UI Emoji'] leading-tight ">
                 <span className="font-semibold mr-1">Quality:</span>
-                <Select onValueChange={(e) => setQuality(e)}>
+                <Select onValueChange={handlevalueChange}>
                   <SelectTrigger className="w-fit px-[7px] py-[2px] h-6 bg-accent">
-                    <SelectValue placeholder={formats[0].qualityLabel} />
+                    <SelectValue placeholder={customFormats[0].qualityLabel} />
                   </SelectTrigger>
                   <SelectContent>
-                    {formats.map((item, index) => (
+                    {customFormats.map((item, index) => (
                       <SelectItem key={index} value={item.qualityLabel}>
                         {item.qualityLabel}
                       </SelectItem>
@@ -109,7 +133,12 @@ const currFormat = formats.find((item) => item.qualityLabel === quality);
               </div>
             </div>
           </div>
-          <Button onClick={downloadVid} className="bg-purple-600  h-full">
+          <Button
+            onClick={async () => {
+              await downloadVid();
+            }}
+            className="bg-purple-600  h-full"
+          >
             <Download />
           </Button>
         </div>

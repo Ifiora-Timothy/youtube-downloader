@@ -31,7 +31,7 @@ export default async function RootLayout({
          session={currUserSession}
          refetchInterval={20}
          basePath="/"
-         refetchOnWindowFocus={true}
+        // refetchOnWindowFocus={true}
          >
           <Providers>
             <div className="flex w-screen overflow-x-hidden flex-col h-screen">
