@@ -32,7 +32,9 @@ const resStream = await sdownloadMultipleVideos(downloadData)
   return (
     <Card className="w-[677px] pb-2 bg-transparent  ">
     <CardHeader className="pb-2 ">
-      <CardTitle className="text-purple-800 flex item justify-between"><span>Videos in {type}:</span><Button onClick={async()=>await DownloadMultiple()} className="bg-orange-500 text-white ">Download All</Button></CardTitle>
+      <CardTitle className="text-purple-800 flex item justify-between"><span>Videos in {type}:</span>
+    {(type==="list"&&data.length>1)? <Button onClick={async()=>await DownloadMultiple()} className="bg-orange-500 text-white ">Download All</Button>:null} 
+      </CardTitle>
     </CardHeader>
     <CardContent className='max-h-[500px] overflow-y-auto'>
       <div className="self-stretch   flex-col justify-start items-center gap-[18px] flex">

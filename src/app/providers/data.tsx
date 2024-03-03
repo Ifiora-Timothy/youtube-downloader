@@ -1,4 +1,5 @@
 "use client";
+import ytpl from "@distube/ytpl";
 import {
   Dispatch,
   PropsWithChildren,
@@ -10,7 +11,7 @@ import { vidRequired } from "../lib/yt/ytdlUtils";
 export type mode = "getVideoInfo" | "getSearchInfo";
 
 export type vidFormat={ videoDetails: vidRequired; customFormats: Array<any>;format?:number };
-
+export type playList=ytpl.result & {type:string,items:Array<vidFormat>,thumbnail?:{url:string,height:number,width:number}}
 export type SearchResults={
     items:Array<vidFormat>,
     query:string,
@@ -24,12 +25,14 @@ export const DataContext = createContext<{
     |vidFormat
     | vidFormat[]
     | null
+    | playList
     | SearchResults;
   setData: Dispatch<
     SetStateAction<
       |vidFormat
       | vidFormat[]
       | null
+      | playList
       | SearchResults
     >
   >; 
@@ -41,6 +44,7 @@ export function DataProvider({ children }: PropsWithChildren) {
     | vidFormat[]
     | null
     | SearchResults
+    | playList
   >(null);
   const [mode, setMode] = useState<mode>("getVideoInfo");
 

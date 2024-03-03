@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import ytdl from "@distube/ytdl-core"
+import { vidFormat } from "../providers/data"
 import List from "./List"
 
 type Props = {
-  data:Array<{videoDetails:ytdl.MoreVideoDetails,customFormats:Array<any>}>
+  data:Array<vidFormat
+  >
 }
 
 const SingleDownloads = ({data}: Props) => {

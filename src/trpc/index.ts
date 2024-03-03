@@ -1,7 +1,13 @@
 import { FormData } from "@/app/components/Signup";
 import dbConnect from "@/app/lib/dbConnect";
 import { user } from "@/app/lib/models/user";
-import { getSearchInfo, getVideoInfo } from "@/app/lib/yt/ytdlUtils";
+import {
+  getPlaylistInfo,
+  getSearchInfo,
+  getVideoInfo,
+} from "@/app/lib/yt/ytdlUtils";
+import ytdl from "@distube/ytdl-core";
+import ytpl from "@distube/ytpl";
 import { TRPCError } from "@trpc/server";
 import { AuthError } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect";
@@ -112,7 +118,7 @@ export const appRouter = router({
   getVideoInfo: privateProcedure
     .input(
       z.object({
-        text: z.string().startsWith("https://")
+        text: z.string().startsWith("https://"),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -125,16 +131,33 @@ export const appRouter = router({
           email: userInfo.email,
         });
         if (resp.success) {
-          const vidInfo = await getVideoInfo(input.text);
-          if (vidInfo instanceof Error) {
-            console.log("reached");
-            console.log(vidInfo.message, "index page");
+          if (ytpl.validateID(input.text)) {
+            //is a playlist get the playlist details
+            const playlistInfo = await getPlaylistInfo(input.text);
+            if (playlistInfo instanceof Error) {
+              console.log(playlistInfo.message, "index page");
+              throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: playlistInfo.message,
+              });
+            }
+            return { vidInfo:playlistInfo };
+          } else if (ytdl.validateURL(input.text)) {
+            //  it is a video
+            const vidInfo = await getVideoInfo(input.text);
+            if (vidInfo instanceof Error) {
+              throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: vidInfo.message,
+              });
+            }
+            return { vidInfo };
+          } else {
             throw new TRPCError({
               code: "UNAUTHORIZED",
-              message: vidInfo.message,
+              message: "invalid url",
             });
           }
-          return { vidInfo };
         }
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -156,7 +179,6 @@ export const appRouter = router({
     .query(async ({ ctx, input }) => {
       const { userId, user: userInfo } = ctx;
       try {
-        console.log("query called");
         await dbConnect();
         //@ts-ignore
         const resp: any = await user.findByEmailAndUsername({
@@ -164,10 +186,8 @@ export const appRouter = router({
           email: userInfo.email,
         });
         if (resp.success) {
-         const vidInfo:any = await getSearchInfo(input.text);
- if (vidInfo instanceof Error) {
-            console.log("reached");
-            console.log(vidInfo.message, "index page");
+          const vidInfo: any = await getSearchInfo(input.text);
+          if (vidInfo instanceof Error) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
               message: vidInfo.message,
@@ -180,9 +200,9 @@ export const appRouter = router({
           message: "unknown cause",
         });
       } catch (err: any) {
-        if(err instanceof TRPCError){
+        if (err instanceof TRPCError) {
           throw new TRPCError({
-            cause:err.cause,
+            cause: err.cause,
             code: err.code,
             message: err.message,
           });

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.13.3",
+    "@distube/ytpl": "^1.2.1",
     "@distube/ytsr": "^2.0.0",
     "@hookform/resolvers": "^3.3.4",
     "@next/swc-win32-x64-msvc": "^14.1.0",

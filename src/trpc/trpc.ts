@@ -6,19 +6,22 @@ const middleware =t.middleware
 
 const isAuth=middleware(async(opts)=>{
     const currUserSession=  await getUserSession()
+    console.log(currUserSession,"from trpc pages")
     
 
     if( !currUserSession ){
+        console.log("no user");
+        
         throw new TRPCError({
-            cause:"not authenticated",
             code:"UNAUTHORIZED",
             message:"please login to continue"
         })
     }
     const {user}= currUserSession
     if(!user || !user.id){
+        console.log("no user");
+        
         throw new TRPCError({
-            cause:"not authenticated",
             code:"UNAUTHORIZED",
             message:"please relogin to continue"
         })
