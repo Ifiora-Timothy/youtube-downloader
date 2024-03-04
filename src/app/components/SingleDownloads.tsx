@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { vidFormat } from "../providers/data"
+import { vidFormat } from "../contextProviders/data"
 import List from "./List"
 
 type Props = {

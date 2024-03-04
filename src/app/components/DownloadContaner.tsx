@@ -1,6 +1,6 @@
 "use client";
 import { useContext } from "react";
-import { DataContext, vidFormat } from "../providers/data";
+import { DataContext, vidFormat } from "../contextProviders/data";
 import Downloads from "./Downloads";
 import SingleDownloads from "./SingleDownloads";
 

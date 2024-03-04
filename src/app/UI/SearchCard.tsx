@@ -14,8 +14,8 @@ import {
 import clsx from "clsx";
 
 import { useContext, useState } from "react";
+import { DataContext, SearchResults, vidFormat } from "../contextProviders/data";
 import { compareObjects, includesObj } from "../lib/utils/Functions";
-import { DataContext, SearchResults, vidFormat } from "../providers/data";
 type Props = {
   searchResults: SearchResults;
 };

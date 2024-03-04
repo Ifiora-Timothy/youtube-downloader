@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card";
 import Emoji from "react-emoji-render";
 import SearchCard from "../UI/SearchCard";
-import { SearchResults } from "../providers/data";
+import { SearchResults } from "../contextProviders/data";
 
 type Props = {
   searchResults:SearchResults;

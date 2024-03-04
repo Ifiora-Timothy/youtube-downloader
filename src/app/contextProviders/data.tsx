@@ -36,6 +36,7 @@ export const DataContext = createContext<{
       | SearchResults
     >
   >; 
+
 }>({ data: null, setData: () => {}, mode: "getVideoInfo", setMode: () => {}});
 
 export function DataProvider({ children }: PropsWithChildren) {

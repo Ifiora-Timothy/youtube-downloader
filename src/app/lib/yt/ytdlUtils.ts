@@ -1,64 +1,106 @@
 "use server";
+import progressEmitter from "@/app/lib/utils/progressEmitter";
 import ytdl from "@distube/ytdl-core";
 import ytpl from "@distube/ytpl";
 import ytsr from "@distube/ytsr";
-import { log, time, timeEnd } from "console";
+import { log, time } from "console";
 import fs from "fs";
-import { revalidatePath } from "next/cache";
 import os from "os";
 import { Readable, pipeline } from "stream";
-import { Parser } from "stream-json";
-import {
-  Transform,
-  Writable,
-  streamArray,
-} from "stream-json/streamers/StreamArray"; // Import the missing module
+import { Transform, Writable } from "stream-json/streamers/StreamArray"; // Import the missing module
 import { promisify } from "util";
 //get the youtube video info
 
-const removeEmojifromString = (str: string) => {
+const removeEmojifromString = (str: string | string[]) => {
   if (!str) return "";
-  return str.replace(
-    /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
-    ""
-  );
+  if (typeof str === "string") {
+    return str.replace(
+      /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
+      ""
+    );
+  }
+  return str.map((item) => {
+    return item.replace(
+      /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
+      ""
+    );
+  });
 };
 export type multipledownload = {
   url: string;
+  videoId: string;
   title: string;
   options?: ytdl.downloadOptions;
+  playlistPath?: string;
 };
 //fxn to download a video
-export const downloadVideo = async (
-  url: string,
-  title: string,
-  options?: ytdl.downloadOptions
-): Promise<unknown> => {
-  console.log(url, "url in download video");
+type downloadProps = {
+  id: string;
+  url: string;
+  title: string;
+  options?: ytdl.downloadOptions;
+  playlistPath?: string;
+}
+const activeDownloads=new Set();
 
+  export const downloadVideo = async ({
+  id,
+  url,
+  title,
+  options,
+  playlistPath,
+}: downloadProps) => {
   // Store the video in the downloads folder in the home directory
   const homeDir = os.homedir();
   const newTitle = removeEmojifromString(title);
-  const downloadDir = `${homeDir}/Downloads/${newTitle}.mp4`;
-  console.log(downloadDir, "download dir");
+  const newPlaylistPath = playlistPath? removeEmojifromString(playlistPath): null;
+
+  let downloadDir;
+  if (playlistPath) {
+    var downloadPath = `${homeDir}/Downloads/${newPlaylistPath}`;
+    downloadDir = `${downloadPath}/${newTitle}.mp4`;
+   
+    if (!fs.existsSync(downloadPath)) {
+      fs.mkdirSync(downloadPath);
+      console.log(downloadPath, " created successfully");
+    }
+  } 
+  else downloadDir = `${homeDir}/Downloads/${newTitle}.mp4`;
 
   try {
-    console.time("download time");
-
     const writableStream = fs.createWriteStream(downloadDir);
 
+    //add the video id to the activedownloads set
+    activeDownloads.add(id)
+    //download the video
     const toDownload = ytdl(url, options);
+
+    //emit an initial progres of zero
+    progressEmitter.emit(id, 0);
 
     const pipelineAsync = promisify(pipeline);
 
-    await pipelineAsync(toDownload, writableStream);
+    toDownload.on("progress", (chunkLength, downloaded, total) => {
+      const percent = (downloaded / total) * 100;
+      
+      //emit the download progress
+      progressEmitter.emit(id, percent);
+      
+    });
 
-    console.timeEnd("download time");
-    revalidatePath("/ytDownload");
+    writableStream.on("finish",()=>{
+   
+      activeDownloads.delete(id)
+    })
+    //pipe the readablestream to the writable stream
+     pipelineAsync(toDownload, writableStream);
+
+
+    //revalidatePath("/ytDownload");
 
     return {
       message: "success",
-      downloadPath: `/Downloads/${newTitle}.mp4`,
+      downloadPath: `/Downloads/${newPlaylistPath ?? newTitle + ".mp4"}`,
     };
   } catch (err: any) {
     if (err instanceof Error)
@@ -68,55 +110,86 @@ export const downloadVideo = async (
 };
 export const sdownloadMultipleVideos = async (data: multipledownload[]) => {
   time("streaming download time");
-  console.log(data, "data in download multiple videos");
-  const JsonData = JSON.stringify(data);
-
-  const readableStream = Readable.from(JsonData);
-  log(readableStream, "readable stream");
-  const pipeline = readableStream.pipe(new Parser()).pipe(streamArray());
-  log("pipeline");
   try {
-    console.log("ready in stream");
+    const readableStream = Readable.from(data, { objectMode: true });
+    const pipelineAsync = promisify(pipeline);
+    const batchTransformStream = new Transform({
+      objectMode: true,
+      highWaterMark: 10,
+      transform(chunk, encoding, callback) {
+        this.push(chunk);
+        callback();
+      },
+    });
 
-    const promiseItems: Promise<unknown>[] = [];
+    const asyncTransform = new Transform({
+      objectMode: true,
+      async transform(chunk, encoding, callback) {
+        console.log("transforming data");
+        // console.log(chunk, "chunk");
 
-    pipeline.on("data", async (data) => {
-      log("reached");
-      console.log(data, "data in streaming download");
+        const { url, title, options, playlistPath, videoId } = chunk;
+        const transformedChunk: any = await new Promise((resolve, reject) =>
+          resolve(
+            downloadVideo({
+              url: url,
+              title: title,
+              options: options,
+              id: videoId,
+              playlistPath: playlistPath,
+            })
+          )
+        );
+        console.log("success");
 
-      const newItem = downloadVideo(
-        data.value.url,
-        data.value.title,
-        data.value.options
+        callback(null, { ...chunk, ...transformedChunk });
+      },
+    });
+
+    const transformedData: any[] = [];
+    const writableStream = new Writable({
+      objectMode: true,
+      write(chunk, encoding, callback) {
+        console.log("received data");
+
+        transformedData.push(chunk);
+        callback();
+      },
+    });
+
+    try {
+      await pipelineAsync(
+        readableStream,
+        batchTransformStream,
+        asyncTransform,
+        writableStream
       );
-      log(newItem, "new item in streaming download");
-      promiseItems.push(newItem);
-    });
+      console.log("piprline completed successfully");
+      //console.log(transformedData);
 
-    pipeline.on("end", async () => {
-      await Promise.all(promiseItems);
-      timeEnd("streaming download time");
-      console.log(promiseItems, "new items in download multiple videos");
-    });
+      return {
+        message: "Playlist downloaded successfully",
+        path: transformedData[0].downloadPath,
+      };
+    } catch (err) {
+      console.error("pipeline failed", err);
+      throw new Error("pipeline failed");
+    }
 
-    pipeline.on("error", (err) => {
-      console.log(err, "error in streaming download");
-      timeEnd("streaming download time");
-    });
+    // const res = JSON.parse(JSON.stringify(transformedData));
+    //console.log(res);
 
-    return promiseItems;
-  } catch (err) {
-    console.log("error in streaming download");
-
-    timeEnd("streaming download time");
-    return err;
+    // return res;
+  } catch (err: any) {
+    if (err instanceof Error)
+      throw new Error(`could not get the basic info ${err.message}`);
+    throw new Error("something went wrong");
   }
 };
 
 // this does the same thing with the above but we are making use of the above
 export const downloadMultipleVideos = async (data: multipledownload[]) => {
   console.time("normal download time");
-  console.log(data, "data in download multiple videos");
   const batchSize = 10; // Set the batch size according to your needs
   const totalBatches = Math.ceil(data.length / batchSize);
   const newItems: unknown[] = [];
@@ -124,7 +197,12 @@ export const downloadMultipleVideos = async (data: multipledownload[]) => {
     for (let i = 0; i < totalBatches; i++) {
       const batch = data.slice(i * batchSize, (i + 1) * batchSize);
       const promiseItems = batch.map(async (item) => {
-        const newItem = downloadVideo(item.url, item.title, item.options);
+        const newItem = downloadVideo({
+          url: item.url,
+          title: item.title,
+          id: item.videoId,
+          options: item.options,
+        });
 
         return newItem;
       });
@@ -135,13 +213,29 @@ export const downloadMultipleVideos = async (data: multipledownload[]) => {
 
     console.timeEnd("normal download time");
 
-    console.log(newItems, "new items in downloads multiple videos");
     return newItems;
   } catch (err) {
     console.timeEnd("normal download time");
     return err;
   }
 };
+
+export const getDownloadProgress = (videoId: string) => {
+console.log("reached progress",videoId,activeDownloads,activeDownloads.has(videoId));
+
+if(!activeDownloads.has(videoId)){
+  return null
+}
+log(videoId,"progress here")
+  return new Promise((resolve) => {
+    const listener = (progress: number) => {
+      resolve({ progress });
+      progressEmitter.off(videoId, listener);
+    };
+    progressEmitter.once(videoId, listener);
+  });
+};
+
 export type vidRequired = {
   author: {
     name: string;
@@ -160,11 +254,8 @@ export type vidRequired = {
 };
 
 export const getVideoInfo = async (url: string) => {
-  console.log(url, "url in get video info");
-
   try {
     const info = await ytdl.getBasicInfo(url);
-    //console.log(info,'info');
     const { videoDetails, formats } = info;
     //filter the videodetails to the type of vidRequired
     const newVideoDetails: vidRequired = {
@@ -218,7 +309,6 @@ export const getVideoInfo = async (url: string) => {
     const customVideoDetails = JSON.parse(
       JSON.stringify({ videoDetails: newVideoDetails, customFormats })
     );
-    //console.log(customVideoDetails,"custom");
 
     return customVideoDetails;
   } catch (err: any) {
@@ -243,7 +333,6 @@ export const getSearchInfo = async (url: string) => {
   //to get the values in their nrormal format
   const newItems = await Promise.all(promiseItems);
   const newSearchResults = { ...searchResults, items: newItems };
-  console.log(newSearchResults, "search results");
 
   try {
     return JSON.parse(JSON.stringify(newSearchResults));
@@ -265,26 +354,24 @@ export const getPlaylistInfo = async (url: string) => {
     const pipelineAsync = promisify(pipeline);
     //transform the data
 
-    const batchTransformStream=new Transform({
-      objectMode:true,
-      highWaterMark:10,
+    const batchTransformStream = new Transform({
+      objectMode: true,
+      highWaterMark: 10,
       transform(chunk, encoding, callback) {
         this.push(chunk);
-        callback()
+        callback();
       },
-    })
+    });
 
     const asyncTransform = new Transform({
       objectMode: true,
       async transform(chunk, encoding, callback) {
         console.log("transforming data");
-        console.log(chunk, "chunk");
 
         const { url } = chunk;
         const transformedChunk: any = await new Promise((resolve, reject) =>
           resolve(getVideoInfo(url))
         );
-        console.log({ ...chunk, ...transformedChunk });
 
         callback(null, { ...chunk, ...transformedChunk });
       },
@@ -302,7 +389,12 @@ export const getPlaylistInfo = async (url: string) => {
     });
 
     try {
-      await pipelineAsync(readableStream,batchTransformStream, asyncTransform, writableStream);
+      await pipelineAsync(
+        readableStream,
+        batchTransformStream,
+        asyncTransform,
+        writableStream
+      );
       console.log("piprline completed successfully");
     } catch (err) {
       console.error("pipeline failed", err);
@@ -312,8 +404,6 @@ export const getPlaylistInfo = async (url: string) => {
     const playlistDetails = JSON.parse(
       JSON.stringify({ ...info, items: transformedData, type: "playlist" })
     );
-    console.log(playlistDetails);
-
     return playlistDetails;
   } catch (err: any) {
     if (err instanceof Error)

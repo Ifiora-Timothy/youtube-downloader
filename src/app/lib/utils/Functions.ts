@@ -1,4 +1,4 @@
-import { vidFormat } from "@/app/providers/data";
+import { vidFormat } from "@/app/contextProviders/data";
 import { vidRequired } from "../yt/ytdlUtils";
 
 //function to compare the two objects so that in case of nested objects it can compare them as well as well as the arrangement of the keys

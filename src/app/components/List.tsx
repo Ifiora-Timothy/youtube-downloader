@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 import HorizontalListCard from "../UI/HorizontalListCard"
+import { vidFormat } from "../contextProviders/data"
 import { multipledownload, sdownloadMultipleVideos } from "../lib/yt/ytdlUtils"
-import { vidFormat } from "../providers/data"
 
 type Props = {
     type:"playlist"|"list",
@@ -13,8 +14,8 @@ type Props = {
 
 const List = ({type,data}: Props) => {
 
-  const downloadData:multipledownload[] = data.map(({videoDetails,format}) => ({url: videoDetails.video_url,title: videoDetails.title,options:  {
-    quality: format,
+  const downloadData:multipledownload[] = data.map(({videoDetails,format}) => ({url: videoDetails.video_url,title: videoDetails.title,videoId:videoDetails.videoId,options:  {
+    quality: format
   }}))
 const DownloadMultiple = async () => {
 
@@ -23,8 +24,14 @@ const DownloadMultiple = async () => {
 
 
 //for stream download
-const resStream = await sdownloadMultipleVideos(downloadData)
-
+const resStream = sdownloadMultipleVideos(downloadData);
+toast.promise(resStream, {
+  loading: "downloading playlist",
+  success: (data) => {
+    return `successfully downloaded to ${data.path}`;
+  },
+  error: "an error occurres",
+});
 }
 
 

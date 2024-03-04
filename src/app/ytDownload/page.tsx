@@ -1,7 +1,7 @@
 
 import DownloadContaner from '../components/DownloadContaner'
 import Search from '../components/Search'
-import { DataProvider } from '../providers/data'
+import { DataProvider } from '../contextProviders/data'
 type Props = {}
 
 const YtDownload = (props: Props) => {

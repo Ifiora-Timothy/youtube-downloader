@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -8,13 +6,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download } from "lucide-react";
 import Image from "next/image";
 import { useContext, useState } from "react";
 //import io from "socket.io-client";
-import { toast } from "sonner";
-import { downloadVideo } from "../lib/yt/ytdlUtils";
-import { DataContext, vidFormat } from "../providers/data";
+import { DataContext, vidFormat } from "../contextProviders/data";
+import { ProgressProvider } from "../contextProviders/progressContext";
+import DownloadBtn from "./DownloadBtn";
+import ProgressUi from "./ProgressUi";
 
 export type format = {
   approxDurationMs?: string;
@@ -47,30 +45,9 @@ const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
 
 
   const {setData}=useContext(DataContext)
-  console.log(item, "horizontal list card");
   const [quality, setQuality] = useState<string>(customFormats[0].qualityLabel);
-  const [progress, setProgress] = useState<number>(0);
 
   const format = customFormats.find((item) => item.qualityLabel === quality)!;
-
-  const downloadVid = async () => {
-    console.log("ready to download video");
-
-    if (format) {
-      const res: Promise<any> = downloadVideo(item.video_url, item.title, {
-        quality: format.itag,
-      });
-      toast.promise(res, {
-        loading: "downloading video",
-        success: (data: { message: "success"; downloadPath: string }) => {
-          return ` success, saved as ${data.downloadPath}`;
-        },
-        error: (err) => {
-          return err.message;
-        },
-      });
-    }
-  };
 
   const handlevalueChange = (value: string) => {
     const videoId=item.video_url
@@ -93,6 +70,7 @@ const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
   };
 
   return (
+    <ProgressProvider>
     <Card className="pt-6  ">
       <CardContent className="w-[496px]  rounded flex-col justify-center items-start gap-3 flex">
         <div className="h-[60px]  flex ">
@@ -118,7 +96,7 @@ const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
               </div>
               <div className="ml-2 text-black flex items-center text-xs font-normal font-['Segoe UI Emoji'] leading-tight ">
                 <span className="font-semibold mr-1">Quality:</span>
-                <Select onValueChange={handlevalueChange}>
+                <Select value={quality} onValueChange={handlevalueChange}>
                   <SelectTrigger className="w-fit px-[7px] py-[2px] h-6 bg-accent">
                     <SelectValue placeholder={customFormats[0].qualityLabel} />
                   </SelectTrigger>
@@ -133,22 +111,12 @@ const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
               </div>
             </div>
           </div>
-          <Button
-            onClick={async () => {
-              await downloadVid();
-            }}
-            className="bg-purple-600  h-full"
-          >
-            <Download />
-          </Button>
+         <DownloadBtn videoDetails={item} customFormats={customFormats} quality={quality} />
         </div>
-        <Progress
-          indicatorColor="bg-purple-600"
-          value={33}
-          className="w-[459px]   bg-gray-700 "
-        />
+      <ProgressUi videoId={item.videoId}/>
       </CardContent>
     </Card>
+    </ProgressProvider>
   );
 };
 
