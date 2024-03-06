@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import { toast } from "sonner";
+import { useContext } from "react";
 import { vidFormat } from "../contextProviders/data";
+import { ProgressContext } from "../contextProviders/progressContext";
 import { multipledownload, sdownloadMultipleVideos } from "../lib/yt/ytdlUtils";
 
 export type verticalCard = {
@@ -35,31 +36,48 @@ const VerticalListCard = ({
     ({ videoDetails, format }) => ({
       url: videoDetails.video_url,
       title: videoDetails.title,
-      videoId:videoDetails.videoId,
+      videoId: videoDetails.videoId,
       options: {
         quality: format,
       },
       playlistPath: title,
     })
   );
-  const handleDownloadAll = async () => {
+
+  const { startTracking,playlistProgress,progressMap } = useContext(ProgressContext);
+  console.log(playlistProgress,"progress",id);
+  const totalSum=Array.from(progressMap.values()).reduce((acc,cur)=>acc + cur,0)
+  console.log(totalSum,progressMap.size);
+  
+  const percent= totalSum/progressMap.size
+
+
+  const handleDownloadAll = async (id:string) => {
     //for normal download
     //const resNorm = await downloadMultipleVideos(downloadData)
 
     //for stream download
+
+    console.log("about to stream");
     const resStream = sdownloadMultipleVideos(downloadData);
-    let response:any
-  toast.promise(resStream, {
-      loading: "downloading playlist",
-      success: (data) => {
-        response=data
-        return `successfully downloaded to ${data.path}`;
-      },
-      error: "an error occurres",
-    })
-    const res=await resStream
- //   console.log(response,"here",res);
-    
+    downloadData.map((item): any => {
+     // console.log(item.videoId, ":would be streamed");
+      return startTracking(item.videoId,"single");
+    });
+    startTracking(id,"playlist")
+    const resp = await resStream;
+
+    // let response: any;
+    // toast.promise(resStream, {
+    //   loading: "downloading playlist",
+    //   success: (data) => {
+    //     response = data;
+    //     return `successfully downloaded to ${data.path}`;
+    //   },
+    //   error: "an error occurres",
+    // });
+    // const res = await resStream;
+    //   console.log(response,"here",res);
   };
 
   return (
@@ -96,14 +114,14 @@ const VerticalListCard = ({
         </div>
 
         <Button
-          onClick={handleDownloadAll}
+          onClick={()=>handleDownloadAll(id)}
           className="bg-orange-600 mt-2 text-center px-4 py-2 "
         >
           Download All
         </Button>
         <Progress
           indicatorColor="bg-orange-500"
-          value={33}
+          value={percent}
           className="w-[280px] mt-1   bg-gray-700 "
         />
       </CardContent>

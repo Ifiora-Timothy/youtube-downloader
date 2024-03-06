@@ -10,7 +10,6 @@ import Image from "next/image";
 import { useContext, useState } from "react";
 //import io from "socket.io-client";
 import { DataContext, vidFormat } from "../contextProviders/data";
-import { ProgressProvider } from "../contextProviders/progressContext";
 import DownloadBtn from "./DownloadBtn";
 import ProgressUi from "./ProgressUi";
 
@@ -42,35 +41,32 @@ export const getVideoSize = (quality: string, customFormats: format[]) => {
 };
 
 const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
-
-
-  const {setData}=useContext(DataContext)
+  const { setData } = useContext(DataContext);
   const [quality, setQuality] = useState<string>(customFormats[0].qualityLabel);
-
   const format = customFormats.find((item) => item.qualityLabel === quality)!;
-
   const handlevalueChange = (value: string) => {
-    const videoId=item.video_url
+    const videoId = item.videoId;
+    // this is co that we can set the data with the latest value
+    const format = customFormats.find((item) => item.qualityLabel === value)!;
     setQuality(value);
     //since data is an array of vidFormat we need to find the object in the data that has the video_url that matches the video_url of the current video and update the object format to the new format
-    const newData=setData((prevData)=>{
-      if(Array.isArray(prevData)){
-        return prevData!.map((item)=>{
-          if(item.videoDetails.video_url===videoId){
-            return {...item,format:format.itag}
+    setData((prevData) => {
+      if (Array.isArray(prevData)) {
+        return prevData!.map((item) => {
+          if (item.videoDetails.videoId === videoId) {
+            return { ...item, format: format.itag };
           }
-          return item
-        })
+          return item;
+        });
+      } else if (typeof prevData === "object") {
+        return { ...(prevData as vidFormat), format: format.itag };
       }
-      else if(typeof prevData==='object'){
-        return {...prevData as vidFormat,format:format.itag}
-      }
-      return prevData
-    })
+      return prevData;
+    });
+    //
   };
 
   return (
-    <ProgressProvider>
     <Card className="pt-6  ">
       <CardContent className="w-[496px]  rounded flex-col justify-center items-start gap-3 flex">
         <div className="h-[60px]  flex ">
@@ -111,12 +107,15 @@ const HorizontalListCard = ({ videoDetails: item, customFormats }: Props) => {
               </div>
             </div>
           </div>
-         <DownloadBtn videoDetails={item} customFormats={customFormats} quality={quality} />
+          <DownloadBtn
+            videoDetails={item}
+            customFormats={customFormats}
+            quality={format.itag}
+          />
         </div>
-      <ProgressUi videoId={item.videoId}/>
+        <ProgressUi videoId={item.videoId} />
       </CardContent>
     </Card>
-    </ProgressProvider>
   );
 };
 

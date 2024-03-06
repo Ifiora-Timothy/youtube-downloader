@@ -1,4 +1,5 @@
 import { Progress } from '@/components/ui/progress';
+import clsx from 'clsx';
 import { useContext } from 'react';
 import { ProgressContext } from '../contextProviders/progressContext';
 
@@ -10,14 +11,18 @@ type Props = {
         progress: number;
       }
 const ProgressUi = ({videoId}: Props) => {
-    const {progress}= useContext(ProgressContext)
+    const {progressMap}= useContext(ProgressContext)   
+    //look up the progress for the specific video
+     const progress=progressMap.get(videoId)|| 0;
+    console.log(progressMap);
+    
 
-console.log(progress,"progress");
-
-     
   return (
     <Progress
-    indicatorColor="bg-purple-600"
+    indicatorColor={clsx({
+      "bg-green-600":progress>=100,
+      "bg-purple-600":progress<100
+    })}
     value={progress}
     className="w-[459px]   bg-gray-700 "
   />

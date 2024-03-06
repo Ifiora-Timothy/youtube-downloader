@@ -14,7 +14,6 @@ type Props = {
 
 const TextComponent = ({ searchResults={items:[],query:"",results:0} }: Props) => {
 
-  console.log(searchResults,"searchResults");
   return (
     <div className="rounded ease-in transition-all p-3 ml-auto top-10 w-[470px] absolute z-10 ">
       <div className=" gap-2 overflow-y-auto  flex items-center justify-center flex-col s">

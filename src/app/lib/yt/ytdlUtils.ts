@@ -1,5 +1,5 @@
 "use server";
-import progressEmitter from "@/app/lib/utils/progressEmitter";
+import progressEmitter, { PlaylistProgressEmitter } from "@/app/lib/utils/progressEmitter";
 import ytdl from "@distube/ytdl-core";
 import ytpl from "@distube/ytpl";
 import ytsr from "@distube/ytsr";
@@ -11,20 +11,12 @@ import { Transform, Writable } from "stream-json/streamers/StreamArray"; // Impo
 import { promisify } from "util";
 //get the youtube video info
 
-const removeEmojifromString = (str: string | string[]) => {
+const removeEmojifromString = (str: string) => {
   if (!str) return "";
-  if (typeof str === "string") {
-    return str.replace(
-      /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
-      ""
-    );
-  }
-  return str.map((item) => {
-    return item.replace(
-      /[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
-      ""
-    );
-  });
+  return str.replace(
+    /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCFF]|\uD83E[\uDD00-\uDDFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g,
+    ""
+  );
 };
 export type multipledownload = {
   url: string;
@@ -32,6 +24,7 @@ export type multipledownload = {
   title: string;
   options?: ytdl.downloadOptions;
   playlistPath?: string;
+  playlistId?:string
 };
 //fxn to download a video
 type downloadProps = {
@@ -40,10 +33,11 @@ type downloadProps = {
   title: string;
   options?: ytdl.downloadOptions;
   playlistPath?: string;
-}
-const activeDownloads=new Set();
+};
+const activeDownloads = new Set();
+const activePlaylist = new Set();
 
-  export const downloadVideo = async ({
+export const downloadVideo = async ({
   id,
   url,
   title,
@@ -53,25 +47,33 @@ const activeDownloads=new Set();
   // Store the video in the downloads folder in the home directory
   const homeDir = os.homedir();
   const newTitle = removeEmojifromString(title);
-  const newPlaylistPath = playlistPath? removeEmojifromString(playlistPath): null;
-
+  const newPlaylistPath = playlistPath
+    ? removeEmojifromString(playlistPath)
+    : null;
+  log("hello");
   let downloadDir;
-  if (playlistPath) {
-    var downloadPath = `${homeDir}/Downloads/${newPlaylistPath}`;
-    downloadDir = `${downloadPath}/${newTitle}.mp4`;
-   
+  if (newPlaylistPath) {
+    var downloadPath = `${homeDir}/Downloads/${newPlaylistPath.replace(
+      /\//g,
+      "-"
+    )}`;
+    downloadDir = `${downloadPath}/${newTitle.replace(/\//g, "-")}.mp4`;
+
     if (!fs.existsSync(downloadPath)) {
       fs.mkdirSync(downloadPath);
       console.log(downloadPath, " created successfully");
     }
-  } 
-  else downloadDir = `${homeDir}/Downloads/${newTitle}.mp4`;
+  } else {
+    downloadDir = `${homeDir}/Downloads/${newTitle.replace(/\//g, "-")}.mp4`;
+
+    console.log(downloadDir);
+  }
 
   try {
     const writableStream = fs.createWriteStream(downloadDir);
 
     //add the video id to the activedownloads set
-    activeDownloads.add(id)
+    activeDownloads.add(id);
     //download the video
     const toDownload = ytdl(url, options);
 
@@ -82,19 +84,16 @@ const activeDownloads=new Set();
 
     toDownload.on("progress", (chunkLength, downloaded, total) => {
       const percent = (downloaded / total) * 100;
-      
+
       //emit the download progress
-      progressEmitter.emit(id, percent);
-      
+      progressEmitter.emit(id,percent);
     });
 
-    writableStream.on("finish",()=>{
-   
-      activeDownloads.delete(id)
-    })
+    writableStream.on("finish", () => {
+      activeDownloads.delete(id);
+    });
     //pipe the readablestream to the writable stream
-     pipelineAsync(toDownload, writableStream);
-
+    pipelineAsync(toDownload, writableStream);
 
     //revalidatePath("/ytDownload");
 
@@ -111,6 +110,7 @@ const activeDownloads=new Set();
 export const sdownloadMultipleVideos = async (data: multipledownload[]) => {
   time("streaming download time");
   try {
+   if(data[0].playlistId){activePlaylist.add(data[0].playlistId)}
     const readableStream = Readable.from(data, { objectMode: true });
     const pipelineAsync = promisify(pipeline);
     const batchTransformStream = new Transform({
@@ -129,17 +129,15 @@ export const sdownloadMultipleVideos = async (data: multipledownload[]) => {
         // console.log(chunk, "chunk");
 
         const { url, title, options, playlistPath, videoId } = chunk;
-        const transformedChunk: any = await new Promise((resolve, reject) =>
-          resolve(
-            downloadVideo({
-              url: url,
-              title: title,
-              options: options,
-              id: videoId,
-              playlistPath: playlistPath,
-            })
-          )
-        );
+   
+        const transformedChunk = await downloadVideo({
+          url: url,
+          title: title,
+          options: options,
+          id: videoId,
+          playlistPath: playlistPath,
+        });
+
         console.log("success");
 
         callback(null, { ...chunk, ...transformedChunk });
@@ -158,12 +156,35 @@ export const sdownloadMultipleVideos = async (data: multipledownload[]) => {
     });
 
     try {
+
       await pipelineAsync(
         readableStream,
         batchTransformStream,
         asyncTransform,
         writableStream
       );
+
+      const totalChunks = data.length;
+      let completedChunks = 0;
+
+
+        const onProgress = (chunk: any) => {
+          completedChunks++;
+          const progress = (completedChunks / totalChunks) * 100;
+          console.log(`Progress: ${progress.toFixed(2)}%`);
+  
+          // Check if chunk.progress is defined before accessing its percentage property
+          if (chunk.progress && chunk.progress.percentage) {
+            const individualProgress = (chunk.progress.percentage * progress) / 100;
+            console.log(`Individual Progress: ${individualProgress.toFixed(2)}%`);
+          }
+        };
+  
+
+      // Call the onProgress function for each chunk processed
+      transformedData.forEach(onProgress);
+
+     
       console.log("piprline completed successfully");
       //console.log(transformedData);
 
@@ -220,19 +241,49 @@ export const downloadMultipleVideos = async (data: multipledownload[]) => {
   }
 };
 
-export const getDownloadProgress = (videoId: string) => {
-console.log("reached progress",videoId,activeDownloads,activeDownloads.has(videoId));
+export const getDownloadProgress = (
+  videoId: string
+): Promise<number> | null => {
+  // console.log(
+  //   "reached progress",
+  //   videoId,
+  //   activeDownloads,
+  //   activeDownloads.has(videoId)
+  // );
 
-if(!activeDownloads.has(videoId)){
-  return null
-}
-log(videoId,"progress here")
+  if (!activeDownloads.has(videoId)) {
+    console.log("'empt");
+PlaylistProgressEmitter.emit(activePlaylist.keys().next().value,(1/(activeDownloads.size+1)))
+
+    return null;
+  }
+ // log(videoId, "progress here");
   return new Promise((resolve) => {
     const listener = (progress: number) => {
-      resolve({ progress });
+      resolve(progress);
       progressEmitter.off(videoId, listener);
     };
     progressEmitter.once(videoId, listener);
+  });
+};
+
+export const getPlaylistProgress = (
+  playlistId: string
+): Promise<number> | null => {
+
+  if (!activePlaylist.has(playlistId)) {
+    console.log("'empt");
+
+
+    return null;
+  }
+log(playlistId, "progress here");
+  return new Promise((resolve) => {
+    const listener = (progress: number) => {
+      resolve(progress);
+      PlaylistProgressEmitter.off(playlistId, listener);
+    };
+    PlaylistProgressEmitter.once(playlistId, listener);
   });
 };
 

@@ -2,6 +2,7 @@
 import DownloadContaner from '../components/DownloadContaner'
 import Search from '../components/Search'
 import { DataProvider } from '../contextProviders/data'
+import { ProgressProvider } from '../contextProviders/progressContext'
 type Props = {}
 
 const YtDownload = (props: Props) => {
@@ -9,6 +10,7 @@ const YtDownload = (props: Props) => {
 //TODO:add a back button to the list page of the search if the person is not interested in the video possibly becaue of size
     return (
 <DataProvider>
+<ProgressProvider>
         <div className="w-screen min-h-screen overflow-y-auto px-16 pb-[186px] bg-purple-900 justify-center flex items-start">
             <div className="w-[1152px] mt-7  p-8 justify-center items-center flex">
                 <div className="w-[1088px] p-6 foregroundGradient rounded-lg flex-col justify-center items-center  flex">
@@ -26,6 +28,7 @@ const YtDownload = (props: Props) => {
                 </div>
             </div>
         </div>
+        </ProgressProvider>
 </DataProvider>
     )
 }

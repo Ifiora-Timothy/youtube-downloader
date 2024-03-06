@@ -5,21 +5,21 @@ import { vidFormat } from "../contextProviders/data";
 import { ProgressContext } from "../contextProviders/progressContext";
 import { downloadVideo } from "../lib/yt/ytdlUtils";
 
-type Props = vidFormat & { quality: string };
+type Props = vidFormat & { quality: number};
 
 const DownloadBtn = ({ customFormats, videoDetails: item, quality }: Props) => {
 
+
 const {startTracking}= useContext(ProgressContext)
 
-  const format = customFormats.find((item) => item.qualityLabel === quality)!;
   const downloadVid = async () => {
-    if (format) {
+    if (quality) {
       console.log("reached", {
         url: item.video_url,
         title: item.title,
         id: item.videoId,
         options: {
-          quality: format.itag,
+          quality: quality,
         },
       });
 
@@ -28,13 +28,11 @@ const {startTracking}= useContext(ProgressContext)
         title: item.title,
         id: item.videoId,
         options: {
-          quality: format.itag,
+          quality: quality,
         },
       });
-      startTracking(item.videoId)
+      startTracking(item.videoId,"single")
       const res= await resPromise
-      console.log(res);
-
       // toast.promise(res, {
       //   loading: "downloading video",
       //   success: (data: { message: "success"; downloadPath: string }) => {

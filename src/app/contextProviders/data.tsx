@@ -49,8 +49,6 @@ export function DataProvider({ children }: PropsWithChildren) {
   >(null);
   const [mode, setMode] = useState<mode>("getVideoInfo");
 
-console.log(mode);
-
   return (
     <DataContext.Provider value={{ data, setData, mode, setMode}}>
       {children}

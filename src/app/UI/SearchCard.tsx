@@ -35,8 +35,7 @@ const SearchCard = ({ searchResults }: Props) => {
     //if the item is already in the selected items array remove it
     const vidDetails = e.videoDetails;
     if (includesObj({ array: selectedItems, object: vidDetails })) {
-      console.log("here1");
-
+      
       setSelectedItems(
         selectedItems.filter(
           (item) => !compareObjects(item.videoDetails, vidDetails)
@@ -44,12 +43,8 @@ const SearchCard = ({ searchResults }: Props) => {
       );
       return;
     }
-    console.log("here2");
-    console.log([vidDetails, selectedItems]);
-
     setSelectedItems([...selectedItems, e]);
   };
-console.log(searchResults)
   const handleSingleDownload = (data: vidFormat) => {
     setData(data);
     setMode("getVideoInfo");

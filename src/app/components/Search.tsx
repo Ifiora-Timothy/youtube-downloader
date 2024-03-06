@@ -24,7 +24,7 @@ import {
   TextSearch,
   X,
 } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Control, useForm } from "react-hook-form";
 import { z } from "zod";
 import { trpc } from "../_trpc/client";
@@ -79,7 +79,6 @@ const Search = (props: Props) => {
 
   const context = useContext(DataContext);
   const {setData,mode,setMode,data} = context;
-  console.log(data);
 
   const query = trpc[mode].useQuery(
     { text},
@@ -99,9 +98,6 @@ const Search = (props: Props) => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     query.refetch();
   }
-  useEffect(() => {
-    console.log(query.fetchStatus, query.status);
-  }, [query.fetchStatus, query.status]);
 
   return (
     <div className="w- flex mt-4 flex-col items-center  relative">

@@ -10,7 +10,6 @@ const DownloadContaner = (props: Props) => {
   const { data, mode } = useContext(DataContext);
 
   if (data) {
-    console.log(data);
     if (mode === "getVideoInfo") {
 
       if (Array.isArray(data as Array<vidFormat>)) {
